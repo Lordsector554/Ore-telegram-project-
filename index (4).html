@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OreTap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#121016;
+    --surface:#1E1A24;
+    --surface-2:#241F2C;
+    --border:rgba(255,255,255,0.08);
+    --amber:#F0A868;
+    --amber-dim:#8A6A45;
+    --sky:#5FA8D3;
+    --green:#7FC97F;
+    --text:#F5F1EA;
+    --muted:#9A93A5;
+    --danger:#D97B7B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:#000;
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+  }
+  .app-frame{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .page{
+    flex:1;
+    padding:20px 18px 96px 18px;
+    animation:fadein .25s ease;
+  }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none} }
+  h1.page-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  p.page-sub{ color:var(--muted); font-size:13.5px; margin-bottom:20px; }
+
+  /* ---------- Home ---------- */
+  .balance-card{
+    background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:22px 20px;
+    margin-bottom:22px;
+  }
+  .balance-label{ color:var(--muted); font-size:13px; margin-bottom:6px; }
+  .balance-split{ display:flex; gap:16px; }
+  .balance-col{ flex:1; min-width:0; }
+  .balance-divider{ width:1px; background:var(--border); flex-shrink:0; }
+  .balance-value{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:26px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-0.5px;
+  }
+  .balance-value span{ color:var(--amber); font-size:15px; margin-left:5px; font-weight:600; }
+  .balance-value.ton{ color:var(--sky); }
+  .balance-value.ton span{ color:var(--sky); }
+  .balance-rate{ color:var(--green); font-size:12.5px; margin-top:6px; }
+  .balance-rate.sky{ color:var(--sky); }
+  .deposit-btn{
+    width:100%; margin-top:16px;
+    background:var(--sky); color:#0E1E27;
+    border:none; border-radius:12px; padding:12px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14px;
+    cursor:pointer;
+  }
+  .balance-actions{ display:flex; gap:10px; margin-top:16px; }
+  .action-btn{
+    flex:1; border-radius:12px; padding:12px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px;
+    cursor:pointer; border:none;
+    background:var(--sky); color:#0E1E27;
+  }
+  .action-btn.outline{
+    background:transparent; border:1px solid var(--sky); color:var(--sky);
+  }
+  .withdraw-input{
+    width:100%; padding:12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-family:'Inter',sans-serif;
+    font-size:14px; margin:14px 0;
+  }
+  .deposit-address{
+    font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
+    padding:12px; margin:12px 0 12px 0; word-break:break-all; color:var(--sky);
+  }
+
+  /* ---------- Games (inside Task page) ---------- */
+  .game-overlay{
+    position:fixed; inset:0; background:rgba(6,5,8,0.82);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50; padding:20px;
+  }
+  .game-overlay[hidden]{ display:none; }
+  .game-modal{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; padding:26px 22px; width:min(320px,100%);
+    text-align:center;
+  }
+  .game-title{ font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:600; margin-bottom:4px; }
+  .game-stake{ color:var(--muted); font-size:12.5px; margin-bottom:16px; }
+  .game-visual{ font-size:52px; margin:10px 0 18px 0; transition:transform .15s ease; }
+  .game-visual.spinning{ animation:spin-visual .9s linear infinite; }
+  @keyframes spin-visual{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+  .game-result{ min-height:22px; font-weight:600; font-size:14.5px; margin-bottom:16px; }
+  .game-result.win{ color:var(--green); }
+  .game-result.lose{ color:var(--danger); }
+  .game-result.pending{ color:var(--sky); }
+  .game-result.pending{ color:var(--sky); }
+  .game-choices{ display:flex; gap:10px; margin-bottom:14px; }
+  .choice-btn{
+    flex:1; padding:12px; border-radius:12px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-family:'Inter',sans-serif;
+    font-weight:600; font-size:14px; cursor:pointer;
+  }
+  .choice-btn.selected{ border-color:var(--sky); color:var(--sky); }
+  .choice-btn:disabled{ opacity:.5; cursor:default; }
+  .game-close{
+    background:none; border:none; color:var(--muted); font-size:13px;
+    cursor:pointer; text-decoration:underline; font-family:'Inter',sans-serif;
+  }
+
+  .mine-zone{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:18px 0 8px 0;
+  }
+  .mine-btn{
+    width:172px; height:172px;
+    border-radius:50%;
+    border:none;
+    background:radial-gradient(circle at 35% 30%, #FFCB92, var(--amber) 55%, var(--amber-dim) 100%);
+    color:#1A1206;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:17px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    cursor:pointer;
+    box-shadow:0 0 0 8px rgba(240,168,104,0.08), 0 0 40px rgba(240,168,104,0.25);
+    animation:pulse 2.4s ease-in-out infinite;
+    transition:transform .15s ease;
+  }
+  .mine-btn:active{ transform:scale(0.96); }
+  .mine-btn:disabled{
+    background:radial-gradient(circle at 35% 30%, #3A3441, var(--surface-2) 60%);
+    color:var(--muted);
+    box-shadow:none;
+    animation:none;
+    cursor:default;
+  }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 8px rgba(240,168,104,0.08), 0 0 40px rgba(240,168,104,0.25); }
+    50%{ box-shadow:0 0 0 14px rgba(240,168,104,0.04), 0 0 55px rgba(240,168,104,0.35); }
+  }
+  .mine-btn .big{ font-size:26px; }
+  .mine-sub{ color:var(--muted); font-size:13px; margin-top:14px; }
+
+  .stats-row{ display:flex; gap:12px; margin-top:22px; }
+  .stat-box{
+    flex:1;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+  }
+  .stat-box .n{ font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:600; }
+  .stat-box .l{ color:var(--muted); font-size:12px; margin-top:2px; }
+
+  /* ---------- Tasks ---------- */
+  .task-group-label{ font-size:13px; color:var(--muted); margin:18px 0 10px 0; }
+  .task-group-label:first-of-type{ margin-top:0; }
+  .task-item{
+    display:flex; align-items:center; gap:14px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .task-icon{
+    width:40px; height:40px; border-radius:11px;
+    background:var(--surface-2);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .task-info{ flex:1; min-width:0; }
+  .task-name{ font-size:14.5px; font-weight:500; }
+  .task-reward{ color:var(--amber); font-size:12.5px; margin-top:2px; }
+  .task-progress{ color:var(--muted); font-size:12px; margin-top:2px; }
+  .task-btn{
+    border:none; border-radius:10px; padding:8px 14px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+    cursor:pointer; flex-shrink:0;
+  }
+  .task-btn.claim{ background:var(--amber); color:#1A1206; }
+  .task-btn.done{ background:transparent; color:var(--green); font-size:18px; padding:8px 10px; cursor:default; }
+  .task-btn.locked{ background:var(--surface-2); color:var(--muted); cursor:default; }
+
+  /* ---------- Mining (rig) ---------- */
+  .rig-card{
+    background:linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .rig-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .rig-level{ font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600; }
+  .rig-tag{ color:var(--sky); font-size:12.5px; margin-top:4px; }
+  .rig-rate{ text-align:right; }
+  .rig-rate .n{ font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600; color:var(--amber); }
+  .rig-rate .l{ color:var(--muted); font-size:12px; }
+  .rig-bar-track{ height:8px; border-radius:5px; background:var(--surface-2); margin-top:16px; overflow:hidden; }
+  .rig-bar-fill{ height:100%; width:64%; background:linear-gradient(90deg, var(--amber-dim), var(--amber)); border-radius:5px; }
+  .rig-bar-label{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:6px; }
+
+  .upgrade-btn{
+    width:100%; margin-top:16px;
+    background:var(--amber); color:#1A1206;
+    border:none; border-radius:12px; padding:13px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px;
+    cursor:pointer;
+  }
+  .booster-item{
+    display:flex; align-items:center; gap:14px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:13px; margin-bottom:10px;
+  }
+  .booster-info{ flex:1; }
+  .booster-name{ font-size:14px; font-weight:500; }
+  .booster-desc{ color:var(--muted); font-size:12.5px; margin-top:2px; }
+
+  /* ---------- Referral ---------- */
+  .refer-card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:18px; margin-bottom:18px; text-align:center;
+  }
+  .refer-code{
+    font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700;
+    color:var(--amber); margin:8px 0 14px 0; word-break:break-all; line-height:1.4;
+  }
+  .copy-btn{
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+    border-radius:10px; padding:10px 20px; font-size:13.5px; font-weight:600;
+    cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .copy-btn.copied{ color:var(--green); border-color:var(--green); }
+  .friend-item{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 4px; border-bottom:1px solid var(--border);
+  }
+  .friend-item:last-child{ border-bottom:none; }
+  .avatar{
+    width:38px; height:38px; border-radius:50%;
+    background:var(--surface-2); display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:600; color:var(--sky); flex-shrink:0;
+  }
+  .friend-name{ font-size:14px; font-weight:500; }
+  .friend-joined{ color:var(--muted); font-size:12px; margin-top:1px; }
+  .friend-earned{ margin-left:auto; color:var(--amber); font-size:13.5px; font-weight:600; }
+
+  /* ---------- Profile ---------- */
+  .profile-head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .profile-avatar{
+    width:64px; height:64px; border-radius:50%;
+    background:linear-gradient(160deg, var(--amber), var(--amber-dim));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:#1A1206;
+  }
+  .profile-name{ font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600; }
+  .profile-handle{ color:var(--muted); font-size:13px; margin-top:2px; }
+  .profile-rank{
+    display:inline-block; margin-top:6px; background:rgba(95,168,211,0.15);
+    color:var(--sky); font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:7px;
+  }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .stat-box.span-2{ grid-column:span 2; }
+  .settings-list{ background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .settings-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:15px 16px; border-bottom:1px solid var(--border); font-size:14px;
+  }
+  .settings-row:last-child{ border-bottom:none; }
+  .settings-row .v{ color:var(--muted); font-size:13px; }
+
+  /* ---------- Bottom nav ---------- */
+  .bottom-nav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:430px;
+    background:rgba(18,16,22,0.92);
+    backdrop-filter:blur(10px);
+    border-top:1px solid var(--border);
+    display:flex;
+    padding:8px 6px calc(env(safe-area-inset-bottom, 0px) + 8px) 6px;
+  }
+  .nav-btn{
+    flex:1; background:none; border:none; color:var(--muted);
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    font-family:'Inter',sans-serif; font-size:10.5px; font-weight:500;
+    padding:6px 0; cursor:pointer;
+  }
+  .nav-btn svg{ width:22px; height:22px; }
+  .nav-btn.active{ color:var(--amber); }
+  .nav-btn.active svg{ stroke:var(--amber); }
+  .nav-btn svg{ stroke:var(--muted); fill:none; stroke-width:1.8; }
+</style>
+</head>
+<body>
+<div class="app-frame">
+
+  <!-- HOME -->
+  <section class="page" id="page-home">
+    <h1 class="page-title">Good to see you back</h1>
+    <p class="page-sub">Here's where your ore stands today.</p>
+
+    <div class="balance-card">
+      <div class="balance-split">
+        <div class="balance-col">
+          <div class="balance-label">Ore balance</div>
+          <div class="balance-value" id="balance-value">12,480.42<span>ORE</span></div>
+          <div class="balance-rate" id="home-rate-text">+120 ORE / hr</div>
+        </div>
+        <div class="balance-divider"></div>
+        <div class="balance-col">
+          <div class="balance-label">TON rewards</div>
+          <div class="balance-value ton" id="ton-value">18.40<span>TON</span></div>
+          <div class="balance-rate sky">Tasks, referrals &amp; games</div>
+        </div>
+      </div>
+      <div class="balance-actions">
+        <button class="action-btn" id="deposit-btn">Deposit TON</button>
+        <button class="action-btn outline" id="withdraw-ton-btn">Withdraw TON</button>
+      </div>
+      <button class="action-btn outline" id="withdraw-ore-btn" style="width:100%; margin-top:10px;">Withdraw ORE</button>
+    </div>
+
+    <!-- WITHDRAW ORE MODAL -->
+    <div class="game-overlay" id="withdraw-ore-overlay" hidden>
+      <div class="game-modal">
+        <div class="game-title">Withdraw ORE</div>
+        <div class="game-stake">Minimum withdrawal: 1,500 ORE</div>
+        <input type="number" id="withdraw-ore-amount" class="withdraw-input" placeholder="Amount in ORE" min="1500" step="1">
+        <div class="game-result" id="withdraw-ore-result"></div>
+        <button class="upgrade-btn" id="withdraw-ore-confirm-btn">Request withdrawal</button>
+        <button class="game-close" id="withdraw-ore-close" style="margin-top:12px;">Close</button>
+      </div>
+    </div>
+
+    <!-- DEPOSIT MODAL -->
+    <div class="game-overlay" id="deposit-overlay" hidden>
+      <div class="game-modal">
+        <div class="game-title">Deposit TON</div>
+        <div class="game-stake">Send TON to your personal address below</div>
+        <div class="deposit-address" id="deposit-address">UQAbc123demoTONaddressXYZ789</div>
+        <button class="copy-btn" id="deposit-copy-btn" style="margin-bottom:14px;">Copy address</button>
+        <div class="game-result" id="deposit-result"></div>
+        <button class="upgrade-btn" id="deposit-simulate-btn">I've sent it — check balance (demo)</button>
+        <button class="game-close" id="deposit-close" style="margin-top:12px;">Close</button>
+      </div>
+    </div>
+
+    <!-- WITHDRAW MODAL (TON only for now) -->
+    <div class="game-overlay" id="withdraw-overlay" hidden>
+      <div class="game-modal">
+        <div class="game-title">Withdraw TON</div>
+        <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 5.00 TON</div>
+        <input type="number" id="withdraw-amount" class="withdraw-input" placeholder="Amount in TON" min="5" step="0.01">
+        <div class="game-result" id="withdraw-result"></div>
+        <button class="upgrade-btn" id="withdraw-confirm-btn">Request withdrawal (demo)</button>
+        <button class="game-close" id="withdraw-close" style="margin-top:12px;">Close</button>
+      </div>
+    </div>
+
+    <div class="mine-zone">
+      <button class="mine-btn" id="mine-btn">
+        <span class="big" id="mine-btn-label">Tap to mine</span>
+        <span id="mine-btn-sub">+120 ORE</span>
+      </button>
+      <div class="mine-sub" id="mine-sub-text">Ready now</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box"><div class="n">Level 4</div><div class="l">Miner rank</div></div>
+      <div class="stat-box"><div class="n">18</div><div class="l">Day streak</div></div>
+      <div class="stat-box"><div class="n">#1,204</div><div class="l">Global rank</div></div>
+    </div>
+  </section>
+
+  <!-- TASKS -->
+  <section class="page" id="page-task" hidden>
+    <h1 class="page-title">Tasks</h1>
+    <p class="page-sub">Complete tasks to earn TON.</p>
+
+    <div class="task-group-label">Daily</div>
+    <div class="task-item">
+      <div class="task-icon">📅</div>
+      <div class="task-info">
+        <div class="task-name">Daily check-in</div>
+        <div class="task-reward">+0.50 TON</div>
+      </div>
+      <button class="task-btn claim" data-reward="0.50">Claim</button>
+    </div>
+
+    <div class="task-group-label">Social &amp; partners</div>
+    <div class="task-item">
+      <div class="task-icon">📣</div>
+      <div class="task-info">
+        <div class="task-name">Join our Telegram channel</div>
+        <div class="task-reward">+2.00 TON · unlocks referrals</div>
+      </div>
+      <button class="task-btn claim" data-reward="2.00" data-unlocks-referral="true">Verify</button>
+    </div>
+    <div class="task-item">
+      <div class="task-icon">🐦</div>
+      <div class="task-info">
+        <div class="task-name">Follow on X</div>
+        <div class="task-reward">+1.50 TON</div>
+      </div>
+      <button class="task-btn claim" data-reward="1.50">Claim</button>
+    </div>
+    <div class="task-item">
+      <div class="task-icon">🎬</div>
+      <div class="task-info">
+        <div class="task-name">Watch partner video</div>
+        <div class="task-reward">+0.30 TON</div>
+      </div>
+      <button class="task-btn claim" data-reward="0.30">Claim</button>
+    </div>
+    <div class="task-item">
+      <div class="task-icon">👥</div>
+      <div class="task-info">
+        <div class="task-name">Invite 3 friends</div>
+        <div class="task-progress">1 of 3 invited</div>
+      </div>
+      <button class="task-btn locked">Locked</button>
+    </div>
+
+    <div class="task-group-label">Games</div>
+    <div class="task-item">
+      <div class="task-icon">🎲</div>
+      <div class="task-info">
+        <div class="task-name">Dice flip</div>
+        <div class="task-reward" id="dice-task-reward">Guess odd or even · stake 5 TON</div>
+      </div>
+      <button class="task-btn claim" data-game="dice">Play</button>
+    </div>
+    <div class="task-item">
+      <div class="task-icon">🍾</div>
+      <div class="task-info">
+        <div class="task-name">Spin the bottle</div>
+        <div class="task-reward" id="bottle-task-reward">Guess white or black · stake 5 TON</div>
+      </div>
+      <button class="task-btn claim" data-game="bottle">Play</button>
+    </div>
+  </section>
+
+  <!-- GAME OVERLAY (shared by both games) -->
+  <div class="game-overlay" id="game-overlay" hidden>
+    <div class="game-modal">
+      <div class="game-title" id="game-title">Dice flip</div>
+      <div class="game-stake" id="game-stake">Stake 5.00 TON · win 9.50 TON</div>
+      <div class="game-visual" id="game-visual">🎲</div>
+      <div class="game-result" id="game-result"></div>
+      <div class="game-choices" id="game-choices"></div>
+      <button class="game-close" id="game-close">Close</button>
+    </div>
+  </div>
+
+  <!-- MINING / RIG -->
+  <section class="page" id="page-mine" hidden>
+    <h1 class="page-title">Your rig</h1>
+    <p class="page-sub">Upgrade to increase how fast you earn.</p>
+
+    <div class="rig-card">
+      <div class="rig-top">
+        <div>
+          <div class="rig-level" id="rig-level">Rig · Level 2</div>
+          <div class="rig-tag" id="rig-tag">Next: Level 3</div>
+        </div>
+        <div class="rig-rate">
+          <div class="n" id="rig-rate-n">120</div>
+          <div class="l">ORE / hr</div>
+        </div>
+      </div>
+      <div class="rig-bar-track"><div class="rig-bar-fill" id="rig-bar-fill"></div></div>
+      <div class="rig-bar-label"><span id="rig-bar-label">12.80 / 20.00 TON</span><span id="rig-bar-pct">64%</span></div>
+      <button class="upgrade-btn" id="upgrade-btn" data-cost="20.00">Upgrade to Level 3 · 20.00 TON</button>
+    </div>
+
+    <div class="task-group-label">Boosters</div>
+    <div class="booster-item">
+      <div class="task-icon">⚡</div>
+      <div class="booster-info">
+        <div class="booster-name">2x speed, 1 hour</div>
+        <div class="booster-desc" id="ad-boost-desc">Watch a short ad to activate</div>
+      </div>
+      <button class="task-btn claim" id="ad-boost-btn">Use</button>
+    </div>
+    <div class="booster-item">
+      <div class="task-icon">🛡️</div>
+      <div class="booster-info">
+        <div class="booster-name">Offline protection</div>
+        <div class="booster-desc">Keep earning while away, 6 hrs</div>
+      </div>
+      <button class="task-btn locked">400 ORE</button>
+    </div>
+  </section>
+
+  <!-- REFERRAL -->
+  <section class="page" id="page-refer" hidden>
+    <h1 class="page-title">Invite friends</h1>
+    <p class="page-sub">Earn 10% of what your friends mine, plus a TON bonus when they join.</p>
+
+    <div class="refer-locked" id="refer-locked" style="display:none;">
+      <div class="refer-card" style="text-align:left;">
+        <div style="font-size:15px; font-weight:600; margin-bottom:6px;">Referrals are locked</div>
+        <div style="color:var(--muted); font-size:13.5px; margin-bottom:16px;">Verify the "Join our Telegram channel" task to unlock your invite link.</div>
+        <button class="upgrade-btn" id="refer-go-to-tasks">Go to Tasks</button>
+      </div>
+    </div>
+
+    <div id="refer-unlocked">
+      <div class="refer-card">
+        <div style="color:var(--muted); font-size:13px;">Your invite link</div>
+        <div class="refer-code" id="refer-link">t.me/OreTapBot?start=ORE_7X2K9</div>
+        <button class="copy-btn" id="copy-btn">Copy invite link</button>
+      </div>
+
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-box"><div class="n">7</div><div class="l">Friends invited</div></div>
+        <div class="stat-box"><div class="n">3,150</div><div class="l">ORE from referrals</div></div>
+        <div class="stat-box"><div class="n">14.00</div><div class="l">TON bonus earned</div></div>
+      </div>
+
+      <div class="task-group-label">Your friends</div>
+      <div class="settings-list" style="padding:4px 12px;">
+        <div class="friend-item">
+          <div class="avatar">MK</div>
+          <div><div class="friend-name">Mira K.</div><div class="friend-joined">Joined 12 days ago</div></div>
+          <div class="friend-earned">+840</div>
+        </div>
+        <div class="friend-item">
+          <div class="avatar">DT</div>
+          <div><div class="friend-name">Daniel T.</div><div class="friend-joined">Joined 9 days ago</div></div>
+          <div class="friend-earned">+510</div>
+        </div>
+        <div class="friend-item">
+          <div class="avatar">SO</div>
+          <div><div class="friend-name">Sade O.</div><div class="friend-joined">Joined 2 days ago</div></div>
+          <div class="friend-earned">+95</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="page" id="page-profile" hidden>
+    <div class="profile-head">
+      <div class="profile-avatar">A</div>
+      <div>
+        <div class="profile-name">Alex</div>
+        <div class="profile-handle">@alex_ore</div>
+        <div class="profile-rank">Level 4 Miner</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="stat-box"><div class="n">12,480</div><div class="l">Total ORE mined</div></div>
+      <div class="stat-box"><div class="n">18.40</div><div class="l">Total TON earned</div></div>
+      <div class="stat-box"><div class="n">23</div><div class="l">Tasks completed</div></div>
+      <div class="stat-box"><div class="n">7</div><div class="l">Friends referred</div></div>
+      <div class="stat-box span-2"><div class="n">Aug 2026</div><div class="l">Member since</div></div>
+    </div>
+
+    <div class="task-group-label">Settings</div>
+    <div class="settings-list">
+      <div class="settings-row"><span>Language</span><span class="v">English</span></div>
+      <div class="settings-row"><span>Notifications</span><span class="v">On</span></div>
+      <div class="settings-row"><span>Wallet</span><span class="v">Not connected</span></div>
+    </div>
+  </section>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="home">
+      <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h5v-5h2v5h5v-9"/></svg>
+      Home
+    </button>
+    <button class="nav-btn" data-page="task">
+      <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+      Tasks
+    </button>
+    <button class="nav-btn" data-page="mine">
+      <svg viewBox="0 0 24 24"><path d="M4 20 14 10"/><path d="M13 5c2 0 6 2 6 6"/><path d="M9 4l6 6-3 3-6-6z"/></svg>
+      Mine
+    </button>
+    <button class="nav-btn" data-page="refer">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 20c.2-2.6 2-4.6 4.5-4.9"/></svg>
+      Refer
+    </button>
+    <button class="nav-btn" data-page="profile">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg>
+      Profile
+    </button>
+  </nav>
+
+</div>
+
+<script>
+  // ---- Tab navigation ----
+  const pages = document.querySelectorAll('.page');
+  const navBtns = document.querySelectorAll('.nav-btn');
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.page;
+      pages.forEach(p => p.hidden = (p.id !== 'page-' + target));
+      navBtns.forEach(b => b.classList.toggle('active', b === btn));
+      window.scrollTo(0, 0);
+    });
+  });
+
+  // ---- Fake balance state ----
+  let balance = 12480.42;
+  const balanceEl = document.getElementById('balance-value');
+  function renderBalance(){
+    balanceEl.innerHTML = balance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>ORE</span>';
+  }
+
+  // ---- Mine / claim cycle (demo timer, sped up to 20s so you can see it work) ----
+  const mineBtn = document.getElementById('mine-btn');
+  const mineLabel = document.getElementById('mine-btn-label');
+  const mineSubEl = document.getElementById('mine-btn-sub');
+  const mineSubText = document.getElementById('mine-sub-text');
+  const CYCLE_SECONDS = 20; // real version will use a proper timestamp-based cycle, e.g. 4 hours
+  let secondsLeft = 0;
+  let timerId = null;
+
+  function formatTime(s){
+    const m = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    return m + ':' + ss;
+  }
+
+  function setReadyState(){
+    mineBtn.disabled = false;
+    mineLabel.textContent = 'Tap to mine';
+    mineSubEl.textContent = '+120 ORE';
+    mineSubText.textContent = 'Ready now';
+  }
+
+  function setCountingState(){
+    mineBtn.disabled = true;
+    mineLabel.textContent = formatTime(secondsLeft);
+    mineSubEl.textContent = 'mining…';
+    mineSubText.textContent = 'Come back when the timer ends';
+  }
+
+  function tick(){
+    secondsLeft--;
+    if (secondsLeft <= 0){
+      clearInterval(timerId);
+      setReadyState();
+    } else {
+      setCountingState();
+    }
+  }
+
+  mineBtn.addEventListener('click', () => {
+    if (mineBtn.disabled) return;
+    balance += 120;
+    renderBalance();
+    secondsLeft = CYCLE_SECONDS;
+    setCountingState();
+    timerId = setInterval(tick, 1000);
+  });
+
+  renderBalance();
+  setReadyState();
+
+  // ---- Fake TON balance state ----
+  let tonBalance = 18.40;
+  const tonEl = document.getElementById('ton-value');
+  function renderTon(){
+    tonEl.innerHTML = tonBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>TON</span>';
+  }
+
+  // ---- Games ----
+  // Demo only: outcome is decided in the browser so you can see it work.
+  // The real version MUST decide the outcome on the server (Vercel + Supabase),
+  // never in client-side JS, or players could rig every round.
+  const GAME_CONFIG = {
+    dice:   { title:'Dice flip',        icon:'🎲', choices:[{id:'odd',label:'Odd'},{id:'even',label:'Even'}] },
+    bottle: { title:'Spin the bottle',  icon:'🍾', choices:[{id:'white',label:'White'},{id:'black',label:'Black'}] }
+  };
+  const DICE_FACES = {1:'⚀',2:'⚁',3:'⚂',4:'⚃',5:'⚄',6:'⚅'};
+  const BOTTLE_FACES = { white:'⚪', black:'⚫' };
+
+  // ====== EASY-EDIT GAME SETTINGS ======
+  // Change these three numbers whenever you like — everything on screen
+  // (task cards, the game popup, and the payout math) updates automatically.
+  const WIN_CHANCE = 0.38;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
+  const STAKE = 1.00;             // TON required to play one round
+  const PAYOUT_MULTIPLIER = 1.9;  // win amount = STAKE x this number
+  // ======================================
+  const PAYOUT = STAKE * PAYOUT_MULTIPLIER;
+
+  // Keep the task-card descriptions in sync with the settings above
+  document.getElementById('dice-task-reward').textContent = `Guess odd or even · stake ${STAKE.toFixed(2)} TON`;
+  document.getElementById('bottle-task-reward').textContent = `Guess white or black · stake ${STAKE.toFixed(2)} TON`;
+
+  const overlay = document.getElementById('game-overlay');
+  const gameTitle = document.getElementById('game-title');
+  const gameStake = document.getElementById('game-stake');
+  const gameVisual = document.getElementById('game-visual');
+  const gameResult = document.getElementById('game-result');
+  const gameChoices = document.getElementById('game-choices');
+  const gameClose = document.getElementById('game-close');
+
+  function openGame(key){
+    const cfg = GAME_CONFIG[key];
+    gameTitle.textContent = cfg.title;
+    gameStake.textContent = `Stake ${STAKE.toFixed(2)} TON · win ${PAYOUT.toFixed(2)} TON`;
+    gameVisual.textContent = cfg.icon;
+    gameVisual.classList.remove('spinning');
+    gameResult.textContent = '';
+    gameResult.className = 'game-result';
+    gameChoices.innerHTML = '';
+    cfg.choices.forEach(choice => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choice.label;
+      btn.addEventListener('click', () => playGame(key, choice.id));
+      gameChoices.appendChild(btn);
+    });
+    overlay.hidden = false;
+  }
+
+  function playGame(key, pickedId){
+    if (tonBalance < STAKE){
+      gameResult.textContent = 'Not enough TON to play';
+      gameResult.className = 'game-result lose';
+      return;
+    }
+    const cfg = GAME_CONFIG[key];
+    [...gameChoices.children].forEach(b => b.disabled = true);
+    gameVisual.classList.add('spinning');
+    gameResult.textContent = 'Rolling…';
+
+    setTimeout(() => {
+      gameVisual.classList.remove('spinning');
+      // house edge comes from WIN_CHANCE being set below 0.5 in the settings block above
+      const win = Math.random() < WIN_CHANCE;
+      const outcomeId = win ? pickedId : cfg.choices.find(c => c.id !== pickedId).id;
+      const outcomeLabel = cfg.choices.find(c => c.id === outcomeId).label;
+
+      // Show a visual that actually matches the outcome, not the static icon
+      if (key === 'dice'){
+        const pool = outcomeId === 'odd' ? [1,3,5] : [2,4,6];
+        const rolled = pool[Math.floor(Math.random() * pool.length)];
+        gameVisual.textContent = DICE_FACES[rolled];
+      } else {
+        gameVisual.textContent = BOTTLE_FACES[outcomeId];
+      }
+
+      tonBalance += win ? (PAYOUT - STAKE) : -STAKE;
+      renderTon();
+
+      if (win){
+        gameResult.textContent = `Landed on ${outcomeLabel} — you won ${PAYOUT.toFixed(2)} TON`;
+        gameResult.className = 'game-result win';
+      } else {
+        gameResult.textContent = `Landed on ${outcomeLabel} — you lost your stake`;
+        gameResult.className = 'game-result lose';
+      }
+    }, 1000);
+  }
+
+  document.querySelectorAll('[data-game]').forEach(btn => {
+    btn.addEventListener('click', () => openGame(btn.dataset.game));
+  });
+  gameClose.addEventListener('click', () => { overlay.hidden = true; });
+
+  renderTon();
+
+  // ---- Referral unlock state ----
+  let referralUnlocked = false;
+  function renderReferGate(){
+    document.getElementById('refer-locked').style.display = referralUnlocked ? 'none' : 'block';
+    document.getElementById('refer-unlocked').style.display = referralUnlocked ? 'block' : 'none';
+  }
+  document.getElementById('refer-go-to-tasks').addEventListener('click', () => {
+    document.querySelector('.nav-btn[data-page="task"]').click();
+  });
+
+  // ---- Task claim buttons (pay TON) ----
+  document.querySelectorAll('.task-btn.claim[data-reward]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const amount = parseFloat(btn.dataset.reward);
+      tonBalance += amount;
+      renderTon();
+      btn.textContent = '✓';
+      btn.classList.remove('claim');
+      btn.classList.add('done');
+      if (btn.dataset.unlocksReferral === 'true'){
+        referralUnlocked = true;
+        renderReferGate();
+      }
+    });
+  });
+
+  // Show the correct locked/unlocked state whenever the Refer tab is opened
+  document.querySelector('.nav-btn[data-page="refer"]').addEventListener('click', renderReferGate);
+  renderReferGate();
+
+  // ---- Rig upgrade (paid in TON) ----
+  const upgradeBtn = document.getElementById('upgrade-btn');
+  upgradeBtn.addEventListener('click', () => {
+    const cost = parseFloat(upgradeBtn.dataset.cost);
+    if (tonBalance < cost){
+      const original = upgradeBtn.textContent;
+      upgradeBtn.textContent = 'Not enough TON';
+      setTimeout(() => { upgradeBtn.textContent = original; }, 1600);
+      return;
+    }
+    tonBalance -= cost;
+    renderTon();
+    document.getElementById('rig-level').textContent = 'Rig · Level 3';
+    document.getElementById('rig-tag').textContent = 'Next: Level 4';
+    document.getElementById('rig-rate-n').textContent = '180';
+    document.getElementById('rig-bar-fill').style.width = '0%';
+    document.getElementById('rig-bar-label').textContent = '0.00 / 35.00 TON';
+    document.getElementById('rig-bar-pct').textContent = '0%';
+    upgradeBtn.textContent = 'Upgrade to Level 4 · 35.00 TON';
+    upgradeBtn.dataset.cost = '35.00';
+  });
+
+  // ---- Referral copy button ----
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.addEventListener('click', () => {
+    const link = 'https://' + document.getElementById('refer-link').textContent;
+    navigator.clipboard?.writeText(link).catch(()=>{});
+    copyBtn.textContent = 'Link copied';
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = 'Copy invite link';
+      copyBtn.classList.remove('copied');
+    }, 1800);
+  });
+
+  // ---- Deposit (demo only — real version needs a backend watching the chain) ----
+  const depositBtn = document.getElementById('deposit-btn');
+  const depositOverlay = document.getElementById('deposit-overlay');
+  const depositResult = document.getElementById('deposit-result');
+  const depositCopyBtn = document.getElementById('deposit-copy-btn');
+  const depositSimulateBtn = document.getElementById('deposit-simulate-btn');
+
+  depositBtn.addEventListener('click', () => {
+    depositResult.textContent = '';
+    depositResult.className = 'game-result';
+    depositOverlay.hidden = false;
+  });
+  document.getElementById('deposit-close').addEventListener('click', () => { depositOverlay.hidden = true; });
+  depositCopyBtn.addEventListener('click', () => {
+    const addr = document.getElementById('deposit-address').textContent;
+    navigator.clipboard?.writeText(addr).catch(()=>{});
+    depositCopyBtn.textContent = 'Address copied';
+    setTimeout(() => { depositCopyBtn.textContent = 'Copy address'; }, 1600);
+  });
+  depositSimulateBtn.addEventListener('click', () => {
+    // Demo only: pretend 5 TON just arrived. The real version needs a backend
+    // job that watches your deposit address on-chain and credits Supabase
+    // automatically — nothing detects real deposits yet.
+    tonBalance += 5.00;
+    renderTon();
+    depositResult.textContent = '+5.00 TON credited (demo)';
+    depositResult.className = 'game-result win';
+  });
+
+  // ---- Withdraw TON (demo — real version needs a backend to actually send TON) ----
+  const MIN_TON_WITHDRAW = 5.00;
+  const withdrawTonBtn = document.getElementById('withdraw-ton-btn');
+  const withdrawOverlay = document.getElementById('withdraw-overlay');
+  const withdrawAmountInput = document.getElementById('withdraw-amount');
+  const withdrawResult = document.getElementById('withdraw-result');
+
+  withdrawTonBtn.addEventListener('click', () => {
+    withdrawAmountInput.value = '';
+    withdrawResult.textContent = '';
+    withdrawResult.className = 'game-result';
+    withdrawOverlay.hidden = false;
+  });
+  document.getElementById('withdraw-close').addEventListener('click', () => { withdrawOverlay.hidden = true; });
+
+  document.getElementById('withdraw-confirm-btn').addEventListener('click', () => {
+    const amount = parseFloat(withdrawAmountInput.value);
+    if (isNaN(amount) || amount <= 0){
+      withdrawResult.textContent = 'Enter a valid amount';
+      withdrawResult.className = 'game-result lose';
+      return;
+    }
+    if (amount < MIN_TON_WITHDRAW){
+      withdrawResult.textContent = `Minimum withdrawal is ${MIN_TON_WITHDRAW.toFixed(2)} TON`;
+      withdrawResult.className = 'game-result lose';
+      return;
+    }
+    if (amount > tonBalance){
+      withdrawResult.textContent = 'Not enough TON in your balance';
+      withdrawResult.className = 'game-result lose';
+      return;
+    }
+    // Demo only: this deducts the balance right away so it can't be spent
+    // twice while pending. The real version needs an "admin approval" queue
+    // in Supabase — the transfer only actually sends once you approve it.
+    tonBalance -= amount;
+    renderTon();
+    withdrawResult.textContent = `${amount.toFixed(2)} TON withdrawal pending admin approval`;
+    withdrawResult.className = 'game-result pending';
+  });
+
+  // ---- Withdraw ORE ----
+  // Flip this to true once you're ready to let people withdraw ORE.
+  // Everything else (the modal, the minimum, the pending status) is already built.
+  const ORE_WITHDRAWALS_ENABLED = false;
+  const MIN_ORE_WITHDRAW = 1500;
+  const withdrawOreBtn = document.getElementById('withdraw-ore-btn');
+  const withdrawOreOverlay = document.getElementById('withdraw-ore-overlay');
+  const withdrawOreAmountInput = document.getElementById('withdraw-ore-amount');
+  const withdrawOreResult = document.getElementById('withdraw-ore-result');
+
+  if (ORE_WITHDRAWALS_ENABLED){
+    withdrawOreBtn.textContent = 'Withdraw ORE';
+  } else {
+    withdrawOreBtn.textContent = 'Withdraw ORE · coming soon';
+  }
+
+  withdrawOreBtn.addEventListener('click', () => {
+    if (!ORE_WITHDRAWALS_ENABLED){
+      const original = withdrawOreBtn.textContent;
+      withdrawOreBtn.textContent = 'ORE withdrawals aren\'t open yet';
+      setTimeout(() => { withdrawOreBtn.textContent = original; }, 1800);
+      return;
+    }
+    withdrawOreAmountInput.value = '';
+    withdrawOreResult.textContent = '';
+    withdrawOreResult.className = 'game-result';
+    withdrawOreOverlay.hidden = false;
+  });
+  document.getElementById('withdraw-ore-close').addEventListener('click', () => { withdrawOreOverlay.hidden = true; });
+
+  document.getElementById('withdraw-ore-confirm-btn').addEventListener('click', () => {
+    const amount = parseFloat(withdrawOreAmountInput.value);
+    if (isNaN(amount) || amount <= 0){
+      withdrawOreResult.textContent = 'Enter a valid amount';
+      withdrawOreResult.className = 'game-result lose';
+      return;
+    }
+    if (amount < MIN_ORE_WITHDRAW){
+      withdrawOreResult.textContent = `Minimum withdrawal is ${MIN_ORE_WITHDRAW.toLocaleString()} ORE`;
+      withdrawOreResult.className = 'game-result lose';
+      return;
+    }
+    if (amount > balance){
+      withdrawOreResult.textContent = 'Not enough ORE in your balance';
+      withdrawOreResult.className = 'game-result lose';
+      return;
+    }
+    balance -= amount;
+    renderBalance();
+    withdrawOreResult.textContent = `${amount.toLocaleString()} ORE withdrawal pending admin approval`;
+    withdrawOreResult.className = 'game-result pending';
+  });
+
+  // ---- Watch ad for 2x mining speed (demo only) ----
+  const adBoostBtn = document.getElementById('ad-boost-btn');
+  const adBoostDesc = document.getElementById('ad-boost-desc');
+  const BASE_RATE = 120;
+  const BOOST_SECONDS = 20; // demo length; real version would be a full hour
+  let adBoostActive = false;
+
+  adBoostBtn.addEventListener('click', () => {
+    if (adBoostActive) return;
+    adBoostActive = true;
+    adBoostBtn.disabled = true;
+    adBoostDesc.textContent = 'Loading ad…';
+
+    setTimeout(() => {
+      const boosted = BASE_RATE * 2;
+      document.getElementById('home-rate-text').textContent = `+${boosted} ORE / hr (2x active)`;
+      document.getElementById('rig-rate-n').textContent = boosted;
+      adBoostDesc.textContent = 'Boost active';
+      adBoostBtn.textContent = 'Active';
+
+      setTimeout(() => {
+        document.getElementById('home-rate-text').textContent = `+${BASE_RATE} ORE / hr`;
+        document.getElementById('rig-rate-n').textContent = BASE_RATE;
+        adBoostDesc.textContent = 'Watch a short ad to activate';
+        adBoostBtn.textContent = 'Use';
+        adBoostBtn.disabled = false;
+        adBoostActive = false;
+      }, BOOST_SECONDS * 1000);
+    }, 1200);
+  });
+
+  // ---- Telegram Mini App init ----
+  // Only runs when actually opened inside Telegram; harmless elsewhere.
+  if (window.Telegram && window.Telegram.WebApp){
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+  }
+</script>
+</body>
+</html>
