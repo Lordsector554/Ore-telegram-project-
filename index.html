@@ -487,7 +487,7 @@
       <div class="game-visual" id="game-visual">🎲</div>
       <div class="game-result" id="game-result"></div>
       <div class="game-choices" id="game-choices"></div>
-       <button class="game-close" id="game-close">Close</button>
+      <button class="game-close" id="game-close">Close</button>
     </div>
   </div>
 
@@ -651,19 +651,25 @@
     balanceEl.innerHTML = balance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>ORE</span>';
   }
 
-  // ---- Mine / claim cycle (demo timer, sped up to 20s so you can see it work) ----
+  // ---- Mine / claim cycle ----
+  // In a regular browser (no Telegram), this stays the same fast 20s demo
+  // as before. Inside real Telegram, it calls /api/claim-mine and the
+  // server's cooldown is what actually governs it — not this local timer.
   const mineBtn = document.getElementById('mine-btn');
   const mineLabel = document.getElementById('mine-btn-label');
   const mineSubEl = document.getElementById('mine-btn-sub');
   const mineSubText = document.getElementById('mine-sub-text');
-  const CYCLE_SECONDS = 20; // real version will use a proper timestamp-based cycle, e.g. 4 hours
+  const CYCLE_SECONDS = 20; // demo-only cycle length, used when not inside Telegram
+  const REAL_CYCLE_SECONDS = 14400; // must match MINE_CYCLE_SECONDS in api/claim-mine.js
   let secondsLeft = 0;
   let timerId = null;
+  let telegramMode = false; // set true once verify-user confirms a real Telegram session
 
   function formatTime(s){
-    const m = String(Math.floor(s/60)).padStart(2,'0');
+    const h = Math.floor(s/3600);
+    const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
     const ss = String(s%60).padStart(2,'0');
-    return m + ':' + ss;
+    return h > 0 ? `${h}:${m}:${ss}` : `${m}:${ss}`;
   }
 
   function setReadyState(){
@@ -690,13 +696,51 @@
     }
   }
 
+  function startCountdown(seconds){
+    secondsLeft = seconds;
+    setCountingState();
+    clearInterval(timerId);
+    timerId = setInterval(tick, 1000);
+  }
+
+  async function claimMineReal(){
+    mineBtn.disabled = true;
+    mineSubText.textContent = 'Checking…';
+    try {
+      const res = await fetch('/api/claim-mine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+      });
+      const data = await res.json();
+      if (res.status === 200){
+        balance = parseFloat(data.user.ore_balance);
+        renderBalance();
+        startCountdown(data.cycleSeconds);
+      } else if (res.status === 429){
+        // Not ready yet — sync the countdown to what the server says is actually left
+        startCountdown(data.secondsLeft);
+      } else {
+        mineSubText.textContent = 'Something went wrong — try again';
+        setReadyState();
+      }
+    } catch (err) {
+      console.error('claim-mine failed:', err);
+      mineSubText.textContent = 'Connection error — try again';
+      setReadyState();
+    }
+  }
+
   mineBtn.addEventListener('click', () => {
     if (mineBtn.disabled) return;
+    if (telegramMode){
+      claimMineReal();
+      return;
+    }
+    // Demo mode (not inside Telegram): same fake local cycle as before
     balance += 120;
     renderBalance();
-    secondsLeft = CYCLE_SECONDS;
-    setCountingState();
-    timerId = setInterval(tick, 1000);
+    startCountdown(CYCLE_SECONDS);
   });
 
   renderBalance();
@@ -804,7 +848,7 @@
     btn.addEventListener('click', () => openGame(btn.dataset.game));
   });
   gameClose.addEventListener('click', () => { overlay.hidden = true; });
-
+  
   renderTon();
 
   // ---- Referral unlock state ----
@@ -966,7 +1010,7 @@
       return;
     }
     withdrawOreAmountInput.value = '';
-      withdrawOreResult.textContent = '';
+    withdrawOreResult.textContent = '';
     withdrawOreResult.className = 'game-result';
     withdrawOreOverlay.hidden = false;
   });
@@ -1044,10 +1088,24 @@
       .then(res => res.json())
       .then(data => {
         if (data.user){
+          telegramMode = true;
           balance = parseFloat(data.user.ore_balance);
           tonBalance = parseFloat(data.user.ton_balance);
           renderBalance();
           renderTon();
+
+          // Sync the mine button to the real cooldown, based on when this
+          // user last actually claimed (from the database, not local memory).
+          if (data.user.last_mine_claim){
+            const secondsSince = (Date.now() - new Date(data.user.last_mine_claim).getTime()) / 1000;
+            if (secondsSince < REAL_CYCLE_SECONDS){
+              startCountdown(Math.ceil(REAL_CYCLE_SECONDS - secondsSince));
+            } else {
+              setReadyState();
+            }
+          } else {
+            setReadyState(); // never mined before — ready immediately
+          }
         } else {
           console.error('verify-user did not return a user:', data);
         }
