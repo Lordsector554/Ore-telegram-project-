@@ -487,7 +487,7 @@
       <div class="game-visual" id="game-visual">🎲</div>
       <div class="game-result" id="game-result"></div>
       <div class="game-choices" id="game-choices"></div>
-      <button class="game-close" id="game-close">Close</button>
+       <button class="game-close" id="game-close">Close</button>
     </div>
   </div>
 
@@ -966,7 +966,7 @@
       return;
     }
     withdrawOreAmountInput.value = '';
-    withdrawOreResult.textContent = '';
+      withdrawOreResult.textContent = '';
     withdrawOreResult.className = 'game-result';
     withdrawOreOverlay.hidden = false;
   });
@@ -1027,11 +1027,32 @@
   });
 
   // ---- Telegram Mini App init ----
-  // Only runs when actually opened inside Telegram; harmless elsewhere.
+  // Only runs when actually opened inside Telegram; harmless elsewhere
+  // (in a regular browser, the demo balances you've been testing stay as-is).
   if (window.Telegram && window.Telegram.WebApp){
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
+
+    // Verify this is a real Telegram user with our backend, and load
+    // their real balances from Supabase instead of the fake demo numbers.
+    fetch('/api/verify-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ initData: tg.initData })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user){
+          balance = parseFloat(data.user.ore_balance);
+          tonBalance = parseFloat(data.user.ton_balance);
+          renderBalance();
+          renderTon();
+        } else {
+          console.error('verify-user did not return a user:', data);
+        }
+      })
+      .catch(err => console.error('verify-user request failed:', err));
   }
 </script>
 </body>
