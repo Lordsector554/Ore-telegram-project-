@@ -918,7 +918,7 @@
         btn.textContent = 'Try again';
         btn.disabled = false;
         setTimeout(() => { btn.textContent = original; }, 1800);
-         }
+      }
     } catch (err) {
       console.error('claim-task failed:', err);
       btn.textContent = 'Connection error';
@@ -947,7 +947,7 @@
     });
   });
 
-  // Show the correct locked/unlocked state whenever the Refer tab is opened
+   // Show the correct locked/unlocked state whenever the Refer tab is opened
   document.querySelector('.nav-btn[data-page="refer"]').addEventListener('click', renderReferGate);
   renderReferGate();
 
@@ -1168,6 +1168,24 @@
           if (data.user.referral_code){
             document.getElementById('refer-link').textContent =
               `t.me/${BOT_USERNAME}?start=${data.user.referral_code}`;
+          }
+
+          // Show correct checkmarks for tasks already claimed in a past
+          // session, instead of them looking claimable again on reopen.
+          if (data.completedTasks){
+            data.completedTasks.forEach(key => {
+              const btn = document.querySelector(`.task-btn.claim[data-task-key="${key}"]`);
+              if (btn){
+                btn.textContent = '✓';
+                btn.classList.remove('claim');
+                btn.classList.add('done');
+                btn.disabled = true;
+                if (btn.dataset.unlocksReferral === 'true'){
+                  referralUnlocked = true;
+                }
+              }
+            });
+            renderReferGate();
           }
 
           // Sync the mine button to the real cooldown, based on when this
