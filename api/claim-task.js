@@ -8,7 +8,8 @@ const supabase = createClient(
 
 // ====== EASY-EDIT SETTINGS ======
 // Keep CHANNEL_USERNAME in sync with the same-named constant in index.html.
-const CHANNEL_USERNAME = 'ORE_Announcement'; // no @, no link — just the username
+const CHANNEL_USERNAME = 'YourChannel'; // no @, no link — just the username
+const REFERRAL_TON_BONUS = 2.00; // paid once to the referrer when their invite completes this task
 
 // Every claimable task and what it pays. This list is authoritative —
 // whatever index.html shows, this is what actually decides and pays out.
@@ -39,6 +40,7 @@ async function isChannelMember(telegramId) {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getChatMember?chat_id=@${CHANNEL_USERNAME}&user_id=${telegramId}`;
   const res = await fetch(url);
   const data = await res.json();
+  console.log('getChatMember response:', JSON.stringify(data)); // check this in Vercel Logs
   if (!data.ok) return false;
   const status = data.result.status;
   return status === 'member' || status === 'administrator' || status === 'creator';
@@ -115,6 +117,27 @@ module.exports = async (req, res) => {
     currency: task.currency
   });
 
+  // One-time referral bonus: pays out the first (and only) time this user
+  // completes the channel-join task. task_completions already stops this
+  // task being claimed twice, so this can't accidentally fire more than once.
+  if (task.unlocksReferral && user.referred_by) {
+    const { data: referrer } = await supabase
+      .from('users')
+      .select('ton_balance, referral_ton_earned')
+      .eq('id', user.referred_by)
+      .single();
+
+    if (referrer) {
+      await supabase
+        .from('users')
+        .update({
+          ton_balance: parseFloat(referrer.ton_balance) + REFERRAL_TON_BONUS,
+          referral_ton_earned: parseFloat(referrer.referral_ton_earned || 0) + REFERRAL_TON_BONUS
+        })
+        .eq('id', user.referred_by);
+    }
+  }
+
   return res.status(200).json({
     user: updatedUser,
     rewarded: task.reward,
@@ -122,4 +145,3 @@ module.exports = async (req, res) => {
     unlockedReferral: !!task.unlocksReferral
   });
 };
-    
