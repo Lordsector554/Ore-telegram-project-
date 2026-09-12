@@ -1,4 +1,4 @@
-const crypto = require('crypto'); 
+const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
@@ -11,6 +11,7 @@ const supabase = createClient(
 // the same-named constant in index.html so the on-screen countdown matches
 // what the server will actually allow.
 const MINE_CYCLE_SECONDS = 14400; // 4 hours
+const REFERRAL_ORE_SHARE = 0.10; // 10% of every mine claim also goes to whoever referred this user
 // =================================
 
 function verifyTelegramInitData(initData, botToken) {
@@ -71,6 +72,27 @@ module.exports = async (req, res) => {
 
   if (updateError) return res.status(500).json({ error: 'Failed to update balance' });
 
+  // Pay the referral share, if this user was referred by someone.
+  // A failure here shouldn't undo the user's own successful claim, so
+  // errors are logged rather than turning this into a failed request.
+  if (user.referred_by) {
+    const share = reward * REFERRAL_ORE_SHARE;
+    const { data: referrer } = await supabase
+      .from('users')
+      .select('ore_balance, referral_ore_earned')
+      .eq('id', user.referred_by)
+      .single();
+
+    if (referrer) {
+      await supabase
+        .from('users')
+        .update({
+          ore_balance: parseFloat(referrer.ore_balance) + share,
+          referral_ore_earned: parseFloat(referrer.referral_ore_earned || 0) + share
+        })
+        .eq('id', user.referred_by);
+    }
+  }
+
   return res.status(200).json({ user: updatedUser, rewarded: reward, cycleSeconds: MINE_CYCLE_SECONDS });
 };
-    
