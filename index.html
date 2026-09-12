@@ -823,6 +823,11 @@
   }
 
   function playGame(key, pickedId){
+    if (telegramMode){
+      playGameReal(key, pickedId);
+      return;
+    }
+    // Demo mode (not inside Telegram): same local-only fake logic as before
     if (tonBalance < STAKE){
       gameResult.textContent = 'Not enough TON to play';
       gameResult.className = 'game-result lose';
@@ -835,12 +840,10 @@
 
     setTimeout(() => {
       gameVisual.classList.remove('spinning');
-      // house edge comes from WIN_CHANCE being set below 0.5 in the settings block above
       const win = Math.random() < WIN_CHANCE;
       const outcomeId = win ? pickedId : cfg.choices.find(c => c.id !== pickedId).id;
       const outcomeLabel = cfg.choices.find(c => c.id === outcomeId).label;
 
-      // Show a visual that actually matches the outcome, not the static icon
       if (key === 'dice'){
         const pool = outcomeId === 'odd' ? [1,3,5] : [2,4,6];
         const rolled = pool[Math.floor(Math.random() * pool.length)];
@@ -860,6 +863,62 @@
         gameResult.className = 'game-result lose';
       }
     }, 1000);
+  }
+
+  // Real version: the server decides win/lose and the actual outcome.
+  // This function only displays whatever it's told — it never decides anything itself.
+  async function playGameReal(key, pickedId){
+    const cfg = GAME_CONFIG[key];
+    [...gameChoices.children].forEach(b => b.disabled = true);
+    gameVisual.classList.add('spinning');
+    gameResult.textContent = 'Rolling…';
+
+    try {
+      const res = await fetch('/api/play-game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          initData: window.Telegram.WebApp.initData,
+          gameType: key,
+          pick: pickedId
+        })
+      });
+      const data = await res.json();
+      gameVisual.classList.remove('spinning');
+
+      if (res.status === 200){
+        tonBalance = parseFloat(data.user.ton_balance);
+        renderTon();
+
+        const outcomeLabel = cfg.choices.find(c => c.id === data.outcome).label;
+        if (key === 'dice'){
+          const pool = data.outcome === 'odd' ? [1,3,5] : [2,4,6];
+          const rolled = pool[Math.floor(Math.random() * pool.length)];
+          gameVisual.textContent = DICE_FACES[rolled];
+        } else {
+          gameVisual.textContent = BOTTLE_FACES[data.outcome];
+        }
+
+        if (data.won){
+          gameResult.textContent = `Landed on ${outcomeLabel} — you won ${data.payout.toFixed(2)} TON`;
+          gameResult.className = 'game-result win';
+        } else {
+          gameResult.textContent = `Landed on ${outcomeLabel} — you lost your stake`;
+          gameResult.className = 'game-result lose';
+        }
+      } else if (res.status === 402){
+        gameResult.textContent = 'Not enough TON to play';
+        gameResult.className = 'game-result lose';
+      } else {
+        gameResult.textContent = 'Something went wrong — try again';
+        gameResult.className = 'game-result lose';
+      }
+    } catch (err) {
+      console.error('play-game failed:', err);
+      gameVisual.classList.remove('spinning');
+      gameResult.textContent = 'Connection error — try again';
+      gameResult.className = 'game-result lose';
+    }
   }
 
   document.querySelectorAll('[data-game]').forEach(btn => {
@@ -906,7 +965,7 @@
           referralUnlocked = true;
           renderReferGate();
         }
-      } else if (res.status === 403){
+          } else if (res.status === 403){
         btn.textContent = 'Join first';
         btn.disabled = false;
         setTimeout(() => { btn.textContent = original; }, 1800);
@@ -947,7 +1006,7 @@
     });
   });
 
-   // Show the correct locked/unlocked state whenever the Refer tab is opened
+  // Show the correct locked/unlocked state whenever the Refer tab is opened
   document.querySelector('.nav-btn[data-page="refer"]').addEventListener('click', renderReferGate);
   renderReferGate();
 
