@@ -483,7 +483,7 @@
   <div class="game-overlay" id="game-overlay" hidden>
     <div class="game-modal">
       <div class="game-title" id="game-title">Dice flip</div>
-      <div class="game-stake" id="game-stake">Stake 5.00 TON · win 9.50 TON</div>
+       <div class="game-stake" id="game-stake">Stake 5.00 TON · win 9.50 TON</div>
       <div class="game-visual" id="game-visual">🎲</div>
       <div class="game-result" id="game-result"></div>
       <div class="game-choices" id="game-choices"></div>
@@ -567,20 +567,20 @@
   <!-- PROFILE -->
   <section class="page" id="page-profile" hidden>
     <div class="profile-head">
-      <div class="profile-avatar">A</div>
+      <div class="profile-avatar" id="profile-avatar">A</div>
       <div>
-        <div class="profile-name">Alex</div>
-        <div class="profile-handle">@alex_ore</div>
-        <div class="profile-rank">Level 4 Miner</div>
+        <div class="profile-name" id="profile-name">Alex</div>
+        <div class="profile-handle" id="profile-handle">@alex_ore</div>
+        <div class="profile-rank" id="profile-rank">Level 4 Miner</div>
       </div>
     </div>
 
     <div class="grid-2">
-      <div class="stat-box"><div class="n">12,480</div><div class="l">Total ORE mined</div></div>
-      <div class="stat-box"><div class="n">18.40</div><div class="l">Total TON earned</div></div>
-      <div class="stat-box"><div class="n">23</div><div class="l">Tasks completed</div></div>
-      <div class="stat-box"><div class="n">7</div><div class="l">Friends referred</div></div>
-      <div class="stat-box span-2"><div class="n">Aug 2026</div><div class="l">Member since</div></div>
+      <div class="stat-box"><div class="n" id="profile-ore">0</div><div class="l">ORE balance</div></div>
+      <div class="stat-box"><div class="n" id="profile-ton">0.00</div><div class="l">TON balance</div></div>
+      <div class="stat-box"><div class="n" id="profile-tasks">0</div><div class="l">Tasks completed</div></div>
+      <div class="stat-box"><div class="n" id="profile-friends">0</div><div class="l">Friends referred</div></div>
+      <div class="stat-box span-2"><div class="n" id="profile-member-since">—</div><div class="l">Member since</div></div>
     </div>
 
     <div class="task-group-label">Settings</div>
@@ -635,6 +635,8 @@
   const balanceEl = document.getElementById('balance-value');
   function renderBalance(){
     balanceEl.innerHTML = balance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>ORE</span>';
+    const profileOre = document.getElementById('profile-ore');
+    if (profileOre) profileOre.textContent = Math.round(balance).toLocaleString();
   }
 
   // ---- Mine / claim cycle ----
@@ -737,6 +739,8 @@
   const tonEl = document.getElementById('ton-value');
   function renderTon(){
     tonEl.innerHTML = tonBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>TON</span>';
+    const profileTon = document.getElementById('profile-ton');
+    if (profileTon) profileTon.textContent = tonBalance.toFixed(2);
   }
 
   // ---- Games ----
@@ -937,6 +941,7 @@
       if (res.status !== 200) return;
 
       document.getElementById('friends-count').textContent = data.friendsCount;
+      document.getElementById('profile-friends').textContent = data.friendsCount;
       document.getElementById('referral-ore').textContent = Math.round(data.referralOreEarned).toLocaleString();
       document.getElementById('referral-ton').textContent = data.referralTonEarned.toFixed(2);
 
@@ -973,7 +978,7 @@
   // check. In a regular browser preview (no Telegram), it falls back to the
   // same instant local-only demo as before.
   async function claimTaskReal(btn, taskKey){
-     const original = btn.textContent;
+    const original = btn.textContent;
     btn.disabled = true;
     btn.textContent = '…';
     try {
@@ -1038,6 +1043,7 @@
 
   // Show the correct locked/unlocked state whenever the Refer tab is opened
   document.querySelector('.nav-btn[data-page="refer"]').addEventListener('click', renderReferGate);
+  document.querySelector('.nav-btn[data-page="profile"]').addEventListener('click', loadReferralStats);
   renderReferGate();
 
   // ---- Rig upgrade (paid in TON) ----
@@ -1276,6 +1282,18 @@
             });
             renderReferGate();
           }
+
+          // Populate the Profile page with real data
+          const displayName = data.user.first_name || data.user.username || 'Miner';
+          document.getElementById('profile-avatar').textContent = displayName.charAt(0).toUpperCase();
+          document.getElementById('profile-name').textContent = displayName;
+          document.getElementById('profile-handle').textContent = data.user.username ? '@' + data.user.username : '';
+          document.getElementById('profile-rank').textContent = `Level ${data.user.rig_level || 2} Miner`;
+          document.getElementById('profile-ore').textContent = Math.round(balance).toLocaleString();
+          document.getElementById('profile-ton').textContent = tonBalance.toFixed(2);
+          document.getElementById('profile-tasks').textContent = (data.completedTasks || []).length;
+          document.getElementById('profile-member-since').textContent =
+            new Date(data.user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
           // Sync the mine button to the real cooldown, based on when this
           // user last actually claimed (from the database, not local memory).
