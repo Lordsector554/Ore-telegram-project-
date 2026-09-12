@@ -421,9 +421,9 @@
       <div class="task-icon">📅</div>
       <div class="task-info">
         <div class="task-name">Daily check-in</div>
-        <div class="task-reward">+0.50 TON</div>
+        <div class="task-reward">+0.005 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.50">Claim</button>
+      <button class="task-btn claim" data-reward="0.005">Claim</button>
     </div>
 
     <div class="task-group-label">Social &amp; partners</div>
@@ -431,25 +431,25 @@
       <div class="task-icon">📣</div>
       <div class="task-info">
         <div class="task-name">Join our Telegram channel</div>
-        <div class="task-reward">+2.00 TON · unlocks referrals</div>
+        <div class="task-reward">+0.01 TON · unlocks referrals</div>
       </div>
-      <button class="task-btn claim" data-reward="2.00" data-unlocks-referral="true">Verify</button>
+      <button class="task-btn claim" data-reward="0.01" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🐦</div>
       <div class="task-info">
         <div class="task-name">Follow on X</div>
-        <div class="task-reward">+1.50 TON</div>
+        <div class="task-reward">+0.008 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="1.50">Claim</button>
+      <button class="task-btn claim" data-reward="0.008">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🎬</div>
       <div class="task-info">
         <div class="task-name">Watch partner video</div>
-        <div class="task-reward">+0.30 TON</div>
+        <div class="task-reward">+0.005 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.30">Claim</button>
+      <button class="task-btn claim" data-reward="0.005">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">👥</div>
@@ -508,8 +508,8 @@
         </div>
       </div>
       <div class="rig-bar-track"><div class="rig-bar-fill" id="rig-bar-fill"></div></div>
-      <div class="rig-bar-label"><span id="rig-bar-label">12.80 / 20.00 TON</span><span id="rig-bar-pct">64%</span></div>
-      <button class="upgrade-btn" id="upgrade-btn" data-cost="20.00">Upgrade to Level 3 · 20.00 TON</button>
+      <div class="rig-bar-label"><span id="rig-bar-label">20.00 / 0.50 TON</span><span id="rig-bar-pct">64%</span></div>
+      <button class="upgrade-btn" id="upgrade-btn" data-cost="0.50">Upgrade to Level 3 · 0.50 TON</button>
     </div>
 
     <div class="task-group-label">Boosters</div>
@@ -527,7 +527,7 @@
         <div class="booster-name">Offline protection</div>
         <div class="booster-desc">Keep earning while away, 6 hrs</div>
       </div>
-      <button class="task-btn locked">400 ORE</button>
+      <button class="task-btn locked">0.5 TON</button>
     </div>
   </section>
 
@@ -767,9 +767,9 @@
   // ====== EASY-EDIT GAME SETTINGS ======
   // Change these three numbers whenever you like — everything on screen
   // (task cards, the game popup, and the payout math) updates automatically.
-  const WIN_CHANCE = 0.38;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
-  const STAKE = 1.00;             // TON required to play one round
-  const PAYOUT_MULTIPLIER = 1.9;  // win amount = STAKE x this number
+  const WIN_CHANCE = 0.40;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
+  const STAKE = 0.3;             // TON required to play one round
+  const PAYOUT_MULTIPLIER = 1.4;  // win amount = STAKE x this number
   // ======================================
   const PAYOUT = STAKE * PAYOUT_MULTIPLIER;
 
@@ -946,7 +946,7 @@
   });
 
   // ---- Withdraw TON (demo — real version needs a backend to actually send TON) ----
-  const MIN_TON_WITHDRAW = 5.00;
+  const MIN_TON_WITHDRAW = 0.10;
   const withdrawTonBtn = document.getElementById('withdraw-ton-btn');
   const withdrawOverlay = document.getElementById('withdraw-overlay');
   const withdrawAmountInput = document.getElementById('withdraw-amount');
