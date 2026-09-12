@@ -6,7 +6,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Confirms this initData genuinely came from Telegram and wasn't faked by a user
 function verifyTelegramInitData(initData, botToken) {
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
@@ -65,5 +64,20 @@ module.exports = async (req, res) => {
     existingUser = newUser;
   }
 
-  return res.status(200).json({ user: existingUser });
+  // NEW: tell the frontend which tasks are already done, so checkmarks
+  // show correctly on load instead of only after the button is tapped again.
+  // Daily tasks only count as "done" if completed today (UTC) — they should
+  // reset to claimable each day.
+  const { data: completions } = await supabase
+    .from('task_completions')
+    .select('task_key, completed_at')
+    .eq('user_id', existingUser.id);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const completedTasks = (completions || [])
+    .filter(c => c.task_key !== 'daily_checkin' || c.completed_at.slice(0, 10) === today)
+    .map(c => c.task_key);
+
+  return res.status(200).json({ user: existingUser, completedTasks });
 };
+    
