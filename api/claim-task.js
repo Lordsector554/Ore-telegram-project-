@@ -8,7 +8,7 @@ const supabase = createClient(
 
 // ====== EASY-EDIT SETTINGS ======
 // Keep CHANNEL_USERNAME in sync with the same-named constant in index.html.
-const CHANNEL_USERNAME = 'YourChannel'; // no @, no link — just the username
+const CHANNEL_USERNAME = 'ORE_Announcement'; // no @, no link — just the username
 
 // Every claimable task and what it pays. This list is authoritative —
 // whatever index.html shows, this is what actually decides and pays out.
