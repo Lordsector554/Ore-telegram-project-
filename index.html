@@ -552,28 +552,14 @@
       </div>
 
       <div class="stats-row" style="margin-bottom:20px;">
-        <div class="stat-box"><div class="n">7</div><div class="l">Friends invited</div></div>
-        <div class="stat-box"><div class="n">3,150</div><div class="l">ORE from referrals</div></div>
-        <div class="stat-box"><div class="n">14.00</div><div class="l">TON bonus earned</div></div>
+        <div class="stat-box"><div class="n" id="friends-count">0</div><div class="l">Friends invited</div></div>
+        <div class="stat-box"><div class="n" id="referral-ore">0</div><div class="l">ORE from referrals</div></div>
+        <div class="stat-box"><div class="n" id="referral-ton">0.00</div><div class="l">TON bonus earned</div></div>
       </div>
 
       <div class="task-group-label">Your friends</div>
-      <div class="settings-list" style="padding:4px 12px;">
-        <div class="friend-item">
-          <div class="avatar">MK</div>
-          <div><div class="friend-name">Mira K.</div><div class="friend-joined">Joined 12 days ago</div></div>
-          <div class="friend-earned">+840</div>
-        </div>
-        <div class="friend-item">
-          <div class="avatar">DT</div>
-          <div><div class="friend-name">Daniel T.</div><div class="friend-joined">Joined 9 days ago</div></div>
-          <div class="friend-earned">+510</div>
-        </div>
-        <div class="friend-item">
-          <div class="avatar">SO</div>
-          <div><div class="friend-name">Sade O.</div><div class="friend-joined">Joined 2 days ago</div></div>
-          <div class="friend-earned">+95</div>
-        </div>
+      <div class="settings-list" id="friends-list" style="padding:4px 12px;">
+        <div style="padding:16px 4px; color:var(--muted); font-size:13.5px;">No friends invited yet — share your link above.</div>
       </div>
     </div>
   </section>
@@ -928,11 +914,55 @@
 
   renderTon();
 
+  // ---- Real referral stats ----
+  // Only fetches inside Telegram — in the browser demo, the "no friends
+  // invited yet" placeholder just stays as-is.
+  function timeAgo(isoString){
+    const seconds = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
+    const days = Math.floor(seconds / 86400);
+    if (days === 0) return 'Joined today';
+    if (days === 1) return 'Joined 1 day ago';
+    return `Joined ${days} days ago`;
+  }
+
+  async function loadReferralStats(){
+    if (!telegramMode) return;
+    try {
+      const res = await fetch('/api/referral-stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+      });
+      const data = await res.json();
+      if (res.status !== 200) return;
+
+      document.getElementById('friends-count').textContent = data.friendsCount;
+      document.getElementById('referral-ore').textContent = Math.round(data.referralOreEarned).toLocaleString();
+      document.getElementById('referral-ton').textContent = data.referralTonEarned.toFixed(2);
+
+      const listEl = document.getElementById('friends-list');
+      if (data.friends.length === 0){
+        listEl.innerHTML = '<div style="padding:16px 4px; color:var(--muted); font-size:13.5px;">No friends invited yet — share your link above.</div>';
+      } else {
+        listEl.innerHTML = data.friends.map(f => {
+          const initials = f.name.slice(0, 2).toUpperCase();
+          return `<div class="friend-item">
+            <div class="avatar">${initials}</div>
+            <div><div class="friend-name">${f.name}</div><div class="friend-joined">${timeAgo(f.joinedAt)}</div></div>
+          </div>`;
+        }).join('');
+      }
+    } catch (err) {
+      console.error('referral-stats failed:', err);
+    }
+  }
+
   // ---- Referral unlock state ----
   let referralUnlocked = false;
   function renderReferGate(){
     document.getElementById('refer-locked').style.display = referralUnlocked ? 'none' : 'block';
     document.getElementById('refer-unlocked').style.display = referralUnlocked ? 'block' : 'none';
+    if (referralUnlocked) loadReferralStats();
   }
   document.getElementById('refer-go-to-tasks').addEventListener('click', () => {
     document.querySelector('.nav-btn[data-page="task"]').click();
@@ -943,7 +973,7 @@
   // check. In a regular browser preview (no Telegram), it falls back to the
   // same instant local-only demo as before.
   async function claimTaskReal(btn, taskKey){
-    const original = btn.textContent;
+     const original = btn.textContent;
     btn.disabled = true;
     btn.textContent = '…';
     try {
@@ -965,7 +995,7 @@
           referralUnlocked = true;
           renderReferGate();
         }
-          } else if (res.status === 403){
+      } else if (res.status === 403){
         btn.textContent = 'Join first';
         btn.disabled = false;
         setTimeout(() => { btn.textContent = original; }, 1800);
