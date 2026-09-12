@@ -421,35 +421,35 @@
       <div class="task-icon">📅</div>
       <div class="task-info">
         <div class="task-name">Daily check-in</div>
-        <div class="task-reward">+0.005 TON</div>
+        <div class="task-reward">+0.50 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.005">Claim</button>
+      <button class="task-btn claim" data-reward="0.50">Claim</button>
     </div>
 
     <div class="task-group-label">Social &amp; partners</div>
     <div class="task-item">
-      <div class="task-icon">📣</div>
-      <div class="task-info">
+      <div class="task-icon" id="join-channel-open" style="cursor:pointer;">📣</div>
+      <div class="task-info" id="join-channel-info" style="cursor:pointer;">
         <div class="task-name">Join our Telegram channel</div>
-        <div class="task-reward">+0.01 TON · unlocks referrals</div>
+        <div class="task-reward">Tap to open · then Verify · +2.00 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.01" data-unlocks-referral="true">Verify</button>
+      <button class="task-btn claim" data-reward="2.00" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🐦</div>
       <div class="task-info">
         <div class="task-name">Follow on X</div>
-        <div class="task-reward">+0.008 TON</div>
+        <div class="task-reward">+1.50 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.008">Claim</button>
+      <button class="task-btn claim" data-reward="1.50">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🎬</div>
       <div class="task-info">
         <div class="task-name">Watch partner video</div>
-        <div class="task-reward">+0.005 TON</div>
+        <div class="task-reward">+0.30 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.005">Claim</button>
+      <button class="task-btn claim" data-reward="0.30">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">👥</div>
@@ -508,8 +508,8 @@
         </div>
       </div>
       <div class="rig-bar-track"><div class="rig-bar-fill" id="rig-bar-fill"></div></div>
-      <div class="rig-bar-label"><span id="rig-bar-label">20.00 / 0.50 TON</span><span id="rig-bar-pct">64%</span></div>
-      <button class="upgrade-btn" id="upgrade-btn" data-cost="0.50">Upgrade to Level 3 · 0.50 TON</button>
+      <div class="rig-bar-label"><span id="rig-bar-label">12.80 / 20.00 TON</span><span id="rig-bar-pct">64%</span></div>
+      <button class="upgrade-btn" id="upgrade-btn" data-cost="20.00">Upgrade to Level 3 · 20.00 TON</button>
     </div>
 
     <div class="task-group-label">Boosters</div>
@@ -527,7 +527,7 @@
         <div class="booster-name">Offline protection</div>
         <div class="booster-desc">Keep earning while away, 6 hrs</div>
       </div>
-      <button class="task-btn locked">0.5 TON</button>
+      <button class="task-btn locked">400 ORE</button>
     </div>
   </section>
 
@@ -764,12 +764,30 @@
   const DICE_FACES = {1:'⚀',2:'⚁',3:'⚂',4:'⚃',5:'⚄',6:'⚅'};
   const BOTTLE_FACES = { white:'⚪', black:'⚫' };
 
+  // ====== EASY-EDIT APP SETTINGS ======
+  // Fill these in with your real bot and channel usernames (no @ symbol).
+  const BOT_USERNAME = 'OreTapBot';        // change to your real bot's username
+  const CHANNEL_USERNAME = 'YourChannel';  // change to your real channel's username
+  // =====================================
+
+  function openTelegramLink(username){
+    const url = `https://t.me/${username}`;
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink){
+      window.Telegram.WebApp.openTelegramLink(url);
+    } else {
+      window.open(url, '_blank');
+    }
+  }
+
+  document.getElementById('join-channel-open').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
+  document.getElementById('join-channel-info').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
+
   // ====== EASY-EDIT GAME SETTINGS ======
   // Change these three numbers whenever you like — everything on screen
   // (task cards, the game popup, and the payout math) updates automatically.
-  const WIN_CHANCE = 0.40;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
-  const STAKE = 0.3;             // TON required to play one round
-  const PAYOUT_MULTIPLIER = 1.4;  // win amount = STAKE x this number
+  const WIN_CHANCE = 0.38;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
+  const STAKE = 1.00;             // TON required to play one round
+  const PAYOUT_MULTIPLIER = 1.9;  // win amount = STAKE x this number
   // ======================================
   const PAYOUT = STAKE * PAYOUT_MULTIPLIER;
 
@@ -848,7 +866,7 @@
     btn.addEventListener('click', () => openGame(btn.dataset.game));
   });
   gameClose.addEventListener('click', () => { overlay.hidden = true; });
-  
+
   renderTon();
 
   // ---- Referral unlock state ----
@@ -906,7 +924,7 @@
   // ---- Referral copy button ----
   const copyBtn = document.getElementById('copy-btn');
   copyBtn.addEventListener('click', () => {
-    const link = 'https://' + document.getElementById('refer-link').textContent;
+     const link = 'https://' + document.getElementById('refer-link').textContent;
     navigator.clipboard?.writeText(link).catch(()=>{});
     copyBtn.textContent = 'Link copied';
     copyBtn.classList.add('copied');
@@ -946,7 +964,7 @@
   });
 
   // ---- Withdraw TON (demo — real version needs a backend to actually send TON) ----
-  const MIN_TON_WITHDRAW = 0.10;
+  const MIN_TON_WITHDRAW = 5.00;
   const withdrawTonBtn = document.getElementById('withdraw-ton-btn');
   const withdrawOverlay = document.getElementById('withdraw-overlay');
   const withdrawAmountInput = document.getElementById('withdraw-amount');
@@ -1093,6 +1111,12 @@
           tonBalance = parseFloat(data.user.ton_balance);
           renderBalance();
           renderTon();
+
+          // Show this user's real, unique referral link instead of the placeholder
+          if (data.user.referral_code){
+            document.getElementById('refer-link').textContent =
+              `t.me/${BOT_USERNAME}?start=${data.user.referral_code}`;
+          }
 
           // Sync the mine button to the real cooldown, based on when this
           // user last actually claimed (from the database, not local memory).
