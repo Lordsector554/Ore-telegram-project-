@@ -423,7 +423,7 @@
         <div class="task-name">Daily check-in</div>
         <div class="task-reward">+0.50 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.50">Claim</button>
+      <button class="task-btn claim" data-reward="0.50" data-task-key="daily_checkin">Claim</button>
     </div>
 
     <div class="task-group-label">Social &amp; partners</div>
@@ -433,7 +433,7 @@
         <div class="task-name">Join our Telegram channel</div>
         <div class="task-reward">Tap to open · then Verify · +2.00 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="2.00" data-unlocks-referral="true">Verify</button>
+      <button class="task-btn claim" data-reward="2.00" data-task-key="join_channel" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🐦</div>
@@ -441,7 +441,7 @@
         <div class="task-name">Follow on X</div>
         <div class="task-reward">+1.50 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="1.50">Claim</button>
+      <button class="task-btn claim" data-reward="1.50" data-task-key="follow_x">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🎬</div>
@@ -449,7 +449,7 @@
         <div class="task-name">Watch partner video</div>
         <div class="task-reward">+0.30 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.30">Claim</button>
+      <button class="task-btn claim" data-reward="0.30" data-task-key="watch_video">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">👥</div>
@@ -880,8 +880,60 @@
   });
 
   // ---- Task claim buttons (pay TON) ----
+  // In Telegram, this calls /api/claim-task, which is the real, authoritative
+  // check. In a regular browser preview (no Telegram), it falls back to the
+  // same instant local-only demo as before.
+  async function claimTaskReal(btn, taskKey){
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+      const res = await fetch('/api/claim-task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData, taskKey })
+      });
+      const data = await res.json();
+      if (res.status === 200){
+        tonBalance = parseFloat(data.user.ton_balance);
+        balance = parseFloat(data.user.ore_balance);
+        renderTon();
+        renderBalance();
+        btn.textContent = '✓';
+        btn.classList.remove('claim');
+        btn.classList.add('done');
+        if (data.unlockedReferral){
+          referralUnlocked = true;
+          renderReferGate();
+        }
+      } else if (res.status === 403){
+        btn.textContent = 'Join first';
+        btn.disabled = false;
+        setTimeout(() => { btn.textContent = original; }, 1800);
+      } else if (res.status === 409){
+        btn.textContent = '✓';
+        btn.classList.remove('claim');
+        btn.classList.add('done');
+      } else {
+        btn.textContent = 'Try again';
+        btn.disabled = false;
+        setTimeout(() => { btn.textContent = original; }, 1800);
+         }
+    } catch (err) {
+      console.error('claim-task failed:', err);
+      btn.textContent = 'Connection error';
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    }
+  }
+
   document.querySelectorAll('.task-btn.claim[data-reward]').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (telegramMode && btn.dataset.taskKey){
+        claimTaskReal(btn, btn.dataset.taskKey);
+        return;
+      }
+      // Demo mode fallback (not inside Telegram)
       const amount = parseFloat(btn.dataset.reward);
       tonBalance += amount;
       renderTon();
@@ -924,7 +976,7 @@
   // ---- Referral copy button ----
   const copyBtn = document.getElementById('copy-btn');
   copyBtn.addEventListener('click', () => {
-     const link = 'https://' + document.getElementById('refer-link').textContent;
+    const link = 'https://' + document.getElementById('refer-link').textContent;
     navigator.clipboard?.writeText(link).catch(()=>{});
     copyBtn.textContent = 'Link copied';
     copyBtn.classList.add('copied');
