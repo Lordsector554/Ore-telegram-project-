@@ -9,7 +9,7 @@ const supabase = createClient(
 // ====== EASY-EDIT SETTINGS ======
 // Your real receiving wallet — only ever used to RECEIVE deposits, never
 // to send anything. Keep this separate from your withdrawal wallet.
-const DEPOSIT_ADDRESS = 'PUT_YOUR_REAL_DEPOSIT_WALLET_ADDRESS_HERE';
+const DEPOSIT_ADDRESS = 'UQA_COfGxFNQH7OWd3tjsy5KsBwnDQa-0I08Z3puY0ubN-bq';
 // =================================
 
 function verifyTelegramInitData(initData, botToken) {
