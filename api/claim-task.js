@@ -9,9 +9,9 @@ const supabase = createClient(
 // ====== EASY-EDIT SETTINGS ======
 // Keep both usernames in sync with the same-named constants in index.html
 // (and PAYOUT_CHANNEL_USERNAME with process-withdrawals.js too).
-const CHANNEL_USERNAME = 'YourChannel';              // no @, no link — just the username
-const PAYOUT_CHANNEL_USERNAME = 'YourPayoutChannel'; // no @, no link
-const REFERRAL_TON_BONUS = 2.00; // paid once to the referrer when BOTH gate tasks below are done
+const CHANNEL_USERNAME = 'ORE_Announcement';              // no @, no link — just the username
+const PAYOUT_CHANNEL_USERNAME = 'ORE_payoutchannel'; // no @, no link
+const REFERRAL_TON_BONUS = 0.02; // paid once to the referrer when BOTH gate tasks below are done
 
 // Every claimable task and what it pays. This list is authoritative —
 // whatever index.html shows, this is what actually decides and pays out.
@@ -23,12 +23,12 @@ const REFERRAL_TON_BONUS = 2.00; // paid once to the referrer when BOTH gate tas
 // verifyChannel: set to the channel username to check real membership against.
 // isReferralGate: referral unlock + bonus only fire once ALL gate tasks are done.
 const TASKS = {
-  daily_checkin:       { reward: 0.50, currency: 'TON', dailyReset: true },
-  join_channel:        { reward: 2.00, currency: 'TON', verifyChannel: CHANNEL_USERNAME, isReferralGate: true },
-  join_payout_channel: { reward: 1.00, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
-  follow_x:            { reward: 1.50, currency: 'TON' },
-  watch_video:         { reward: 0.30, currency: 'TON', resetSeconds: 10800 }, // 3 hours
-  react_message:       { reward: 0.20, currency: 'TON', resetSeconds: 10800 } // 3 hours — honor-system, not verified
+  daily_checkin:       { reward: 50, currency: 'ORE', dailyReset: true },
+  join_channel:        { reward: 0.01, currency: 'TON', verifyChannel: CHANNEL_USERNAME, isReferralGate: true },
+  join_payout_channel: { reward: 0.005, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
+  follow_x:            { reward: 0.005, currency: 'TON' },
+  watch_video:         { reward: 10, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
+  react_message:       { reward: 3, currency: 'ORE', resetSeconds: 10800 } // 3 hours — honor-system, not verified
 };
 const REFERRAL_GATE_TASKS = ['join_channel', 'join_payout_channel'];
 // =================================
