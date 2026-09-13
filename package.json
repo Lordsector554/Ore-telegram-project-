@@ -1,7 +1,9 @@
 {
-  "name": "ore-tap-backend", 
+  "name": "ore-tap-backend",
   "version": "1.0.0",
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "@ton/ton": "^15.1.0",
+    "@ton/crypto": "^3.3.0"
   }
 }
