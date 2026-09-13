@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('crypto'); 
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
