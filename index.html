@@ -463,7 +463,7 @@
         <div class="task-name">Watch partner video</div>
         <div class="task-reward">+0.30 TON · resets every 3 hrs</div>
       </div>
-      <button class="task-btn claim" data-reward="0.30" data-task-key="watch_video">Claim</button>
+       <button class="task-btn claim" data-reward="0.30" data-task-key="watch_video">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon" id="react-message-open" style="cursor:pointer;">❤️</div>
@@ -556,7 +556,7 @@
   <!-- REFERRAL -->
   <section class="page" id="page-refer" hidden>
     <h1 class="page-title">Invite friends</h1>
-    <p class="page-sub">Earn 10% of what your friends mine, plus a TON bonus when they join.</p>
+    <p class="page-sub" id="refer-subtitle">Earn 10% of what your friends mine, plus a TON bonus when they join.</p>
 
     <div class="refer-locked" id="refer-locked" style="display:none;">
       <div class="refer-card" style="text-align:left;">
@@ -794,7 +794,7 @@
   const CHANNEL_USERNAME = 'ORE_Announcement';          // change to your real channel's username
   const PAYOUT_CHANNEL_USERNAME = 'ORE_payoutchannel'; // must match process-withdrawals.js
   const X_USERNAME = 'itz_tripleE';                // change to your real X/Twitter username
-  const ADSGRAM_BLOCK_ID = '47737';        // from https://partner.adsgram.ai
+  const ADSGRAM_BLOCK_ID = '47785';        // from https://partner.adsgram.ai
   // =====================================
 
   function openTelegramLink(username){
@@ -925,7 +925,7 @@
           gameType: key,
           pick: pickedId
         })
-        });
+      });
       const data = await res.json();
       gameVisual.classList.remove('spinning');
 
@@ -997,6 +997,10 @@
       document.getElementById('profile-friends').textContent = data.friendsCount;
       document.getElementById('referral-ore').textContent = Math.round(data.referralOreEarned).toLocaleString();
       document.getElementById('referral-ton').textContent = data.referralTonEarned.toFixed(2);
+      if (typeof data.referralBonusAmount === 'number'){
+        document.getElementById('refer-subtitle').textContent =
+          `Earn 10% of what your friends mine, plus ${data.referralBonusAmount.toFixed(2)} TON when they join.`;
+      }
 
       const listEl = document.getElementById('friends-list');
       if (data.friends.length === 0){
