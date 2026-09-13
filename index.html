@@ -343,13 +343,13 @@
       <div class="balance-split">
         <div class="balance-col">
           <div class="balance-label">Ore balance</div>
-          <div class="balance-value" id="balance-value">12,480.42<span>ORE</span></div>
-          <div class="balance-rate" id="home-rate-text">+120 ORE / hr</div>
+          <div class="balance-value" id="balance-value">0<span>ORE</span></div>
+          <div class="balance-rate" id="home-rate-text">+120 ORE / 4 hr</div>
         </div>
         <div class="balance-divider"></div>
         <div class="balance-col">
           <div class="balance-label">TON rewards</div>
-          <div class="balance-value ton" id="ton-value">18.40<span>TON</span></div>
+          <div class="balance-value ton" id="ton-value">0<span>TON</span></div>
           <div class="balance-rate sky">Tasks, referrals &amp; games</div>
         </div>
       </div>
@@ -393,7 +393,7 @@
     <div class="game-overlay" id="withdraw-overlay" hidden>
       <div class="game-modal">
         <div class="game-title">Withdraw TON</div>
-        <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 5.00 TON</div>
+        <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 0.20 TON</div>
         <input type="number" id="withdraw-amount" class="withdraw-input" placeholder="Amount in TON" min="5" step="0.01">
         <input type="text" id="withdraw-address" class="withdraw-input" placeholder="Your TON wallet address">
         <div class="game-result" id="withdraw-result"></div>
@@ -427,9 +427,9 @@
       <div class="task-icon">📅</div>
       <div class="task-info">
         <div class="task-name">Daily check-in</div>
-        <div class="task-reward">+0.50 TON</div>
+        <div class="task-reward">+50 ORE</div>
       </div>
-      <button class="task-btn claim" data-reward="0.50" data-task-key="daily_checkin">Claim</button>
+      <button class="task-btn claim" data-reward="50" data-task-key="daily_checkin">Claim</button>
     </div>
 
     <div class="task-group-label">Social &amp; partners</div>
@@ -437,41 +437,41 @@
       <div class="task-icon" id="join-channel-open" style="cursor:pointer;">📣</div>
       <div class="task-info" id="join-channel-info" style="cursor:pointer;">
         <div class="task-name">Join our Telegram channel</div>
-        <div class="task-reward">Tap to open · then Verify · +2.00 TON</div>
+        <div class="task-reward">Tap to open · then Verify · +0.01 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="2.00" data-task-key="join_channel" data-unlocks-referral="true">Verify</button>
+      <button class="task-btn claim" data-reward="0.01" data-task-key="join_channel" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
       <div class="task-icon" id="join-payout-channel-open" style="cursor:pointer;">💸</div>
       <div class="task-info" id="join-payout-channel-info" style="cursor:pointer;">
         <div class="task-name">Join our payout channel</div>
-        <div class="task-reward">Tap to open · then Verify · +1.00 TON</div>
+        <div class="task-reward">Tap to open · then Verify · +0.005 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="1.00" data-task-key="join_payout_channel" data-unlocks-referral="true">Verify</button>
+      <button class="task-btn claim" data-reward="0.005" data-task-key="join_payout_channel" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
       <div class="task-icon" id="follow-x-open" style="cursor:pointer;">🐦</div>
       <div class="task-info" id="follow-x-info" style="cursor:pointer;">
         <div class="task-name">Follow on X</div>
-        <div class="task-reward">Tap to open · then Claim · +1.50 TON</div>
+        <div class="task-reward">Tap to open · then Claim · +0.005 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="1.50" data-task-key="follow_x">Claim</button>
+      <button class="task-btn claim" data-reward="0.005" data-task-key="follow_x">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🎬</div>
       <div class="task-info">
         <div class="task-name">Watch partner video</div>
-        <div class="task-reward">+0.30 TON · resets every 3 hrs</div>
+        <div class="task-reward">+3 ORE · resets every 3 hrs</div>
       </div>
-       <button class="task-btn claim" data-reward="0.30" data-task-key="watch_video">Claim</button>
+       <button class="task-btn claim" data-reward="3" data-task-key="watch_video">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon" id="react-message-open" style="cursor:pointer;">❤️</div>
       <div class="task-info" id="react-message-info" style="cursor:pointer;">
         <div class="task-name">React to our latest message</div>
-        <div class="task-reward">Tap to open · then Claim · +0.20 TON · resets every 3 hrs</div>
+        <div class="task-reward">Tap to open · then Claim · +3 ORE · resets every 3 hrs</div>
       </div>
-      <button class="task-btn claim" data-reward="0.20" data-task-key="react_message">Claim</button>
+      <button class="task-btn claim" data-reward="3" data-task-key="react_message">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">👥</div>
@@ -538,7 +538,7 @@
     <div class="booster-item">
       <div class="task-icon">⚡</div>
       <div class="booster-info">
-        <div class="booster-name">2x on your next mine claim</div>
+        <div class="booster-name">1.5x on your next mine claim</div>
         <div class="booster-desc" id="ad-boost-desc">Watch a short ad to activate</div>
       </div>
       <button class="task-btn claim" id="ad-boost-btn">Use</button>
@@ -828,9 +828,9 @@
   // ====== EASY-EDIT GAME SETTINGS ======
   // Change these three numbers whenever you like — everything on screen
   // (task cards, the game popup, and the payout math) updates automatically.
-  const WIN_CHANCE = 0.38;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
-  const STAKE = 1.00;             // TON required to play one round
-  const PAYOUT_MULTIPLIER = 1.9;  // win amount = STAKE x this number
+  const WIN_CHANCE = 0.75;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
+  const STAKE = 0.3;             // TON required to play one round
+  const PAYOUT_MULTIPLIER = 1.3;  // win amount = STAKE x this number
   // ======================================
   const PAYOUT = STAKE * PAYOUT_MULTIPLIER;
 
@@ -1251,7 +1251,7 @@
   });
 
   // ---- Withdraw TON ----
-  const MIN_TON_WITHDRAW = 5.00;
+  const MIN_TON_WITHDRAW = 0.20;
   const withdrawTonBtn = document.getElementById('withdraw-ton-btn');
   const withdrawOverlay = document.getElementById('withdraw-overlay');
   const withdrawAmountInput = document.getElementById('withdraw-amount');
@@ -1327,7 +1327,7 @@
   // ---- Withdraw ORE ----
   // Flip this to true once you're ready to let people withdraw ORE.
   // Everything else (the modal, the minimum, the pending status) is already built.
-  const ORE_WITHDRAWALS_ENABLED = false;
+  const ORE_WITHDRAWALS_ENABLED = true;
   const MIN_ORE_WITHDRAW = 1500;
   const withdrawOreBtn = document.getElementById('withdraw-ore-btn');
   const withdrawOreOverlay = document.getElementById('withdraw-ore-overlay');
@@ -1377,7 +1377,7 @@
     withdrawOreResult.className = 'game-result pending';
   });
 
-  // ---- Watch ad for a 2x boost on your NEXT mine claim ----
+  // ---- Watch ad for a 1.5x boost on your NEXT mine claim ----
   // Real Adsgram integration: the boost is only granted inside the .then()
   // callback, which Adsgram only fires if the ad was genuinely watched
   // through — skipping or an ad error goes to .catch() and grants nothing.
