@@ -783,7 +783,7 @@
   // Keep in sync with RIG_LEVELS in api/upgrade-rig.js — used only to show
   // the correct upgrade button text/cost right after the app loads.
   const RIG_LEVELS_DISPLAY = {
-    2: { nextLevel: 3, cost: 0.5 },
+    2: { nextLevel: 3, cost: 0.50 },
     3: { nextLevel: 4, cost: 1.00 },
     4: { nextLevel: 5, cost: 2.50 }
   };
@@ -925,7 +925,7 @@
           gameType: key,
           pick: pickedId
         })
-      });
+        });
       const data = await res.json();
       gameVisual.classList.remove('spinning');
 
@@ -1334,8 +1334,8 @@
     withdrawOreBtn.textContent = 'Withdraw ORE';
   } else {
     withdrawOreBtn.textContent = 'Withdraw ORE · coming soon';
-    }
-  
+  }
+
   withdrawOreBtn.addEventListener('click', () => {
     if (!ORE_WITHDRAWALS_ENABLED){
       const original = withdrawOreBtn.textContent;
@@ -1400,26 +1400,37 @@
     adBoostDesc.textContent = 'Watch a short ad to activate';
   }
 
-  async function grantRealBoost(){
-    try {
-      const res = await fetch('/api/activate-boost', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
-      });
-      const data = await res.json();
-      if (res.status === 200){
-        setBoostQueuedUI();
-      } else {
-        adBoostDesc.textContent = data.error || 'Something went wrong';
-        adBoostBtn.disabled = false;
-        setTimeout(() => { adBoostDesc.textContent = 'Watch a short ad to activate'; }, 1800);
+  // Waits for Adsgram's OWN server to confirm the reward (via the reward
+  // URL hitting api/adsgram-reward.js), rather than trusting the browser
+  // directly. Polls a few times since that confirmation isn't instant.
+  async function waitForServerConfirmedBoost(){
+    adBoostDesc.textContent = 'Confirming reward…';
+    let attempts = 0;
+    const maxAttempts = 6;
+
+    const poll = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await fetch('/api/verify-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+        });
+        const data = await res.json();
+        if (data.user && parseFloat(data.user.next_claim_multiplier || 1) > 1){
+          clearInterval(poll);
+          setBoostQueuedUI();
+          return;
+        }
+      } catch (err) {
+        console.error('boost confirmation check failed:', err);
       }
-    } catch (err) {
-      console.error('activate-boost failed:', err);
-      adBoostDesc.textContent = 'Connection error — try again';
-      adBoostBtn.disabled = false;
-    }
+      if (attempts >= maxAttempts){
+        clearInterval(poll);
+        adBoostDesc.textContent = 'Still confirming — check back in a minute';
+        adBoostBtn.disabled = false;
+      }
+    }, 2500);
   }
 
   adBoostBtn.addEventListener('click', () => {
@@ -1454,8 +1465,9 @@
 
     AdController.show()
       .then(() => {
-        // Ad genuinely watched through — grant the real boost
-        grantRealBoost();
+        // Ad genuinely watched through — now wait for Adsgram's own server
+        // to confirm it (via the reward URL), not the browser's own say-so.
+        waitForServerConfirmedBoost();
       })
       .catch(() => {
         // Skipped, closed early, or failed to load — no reward
