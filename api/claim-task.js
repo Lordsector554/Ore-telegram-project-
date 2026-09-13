@@ -8,17 +8,17 @@ const supabase = createClient(
 
 // ====== EASY-EDIT SETTINGS ======
 // Keep CHANNEL_USERNAME in sync with the same-named constant in index.html.
-const CHANNEL_USERNAME = 'YourChannel'; // no @, no link — just the username
-const REFERRAL_TON_BONUS = 2.00; // paid once to the referrer when their invite completes this task
+const CHANNEL_USERNAME = 'ORE_Announcement'; // no @, no link — just the username
+const REFERRAL_TON_BONUS = 0.02; // paid once to the referrer when their invite completes this task
 
 // Every claimable task and what it pays. This list is authoritative —
 // whatever index.html shows, this is what actually decides and pays out.
 // Add a new entry here whenever you add a new claimable task to the page.
 const TASKS = {
-  daily_checkin: { reward: 0.50, currency: 'TON', dailyReset: true },
-  join_channel:  { reward: 2.00, currency: 'TON', verifyChannel: true, unlocksReferral: true },
-  follow_x:      { reward: 1.50, currency: 'TON' },
-  watch_video:   { reward: 0.30, currency: 'TON' }
+  daily_checkin: { reward: 50, currency: 'ORE', dailyReset: true },
+  join_channel:  { reward: 0.01, currency: 'TON', verifyChannel: true, unlocksReferral: true },
+  follow_x:      { reward: 0.005, currency: 'TON' },
+  watch_video:   { reward: 0.005, currency: 'TON' }
 };
 // =================================
 
