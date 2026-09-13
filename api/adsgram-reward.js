@@ -6,7 +6,7 @@ const supabase = createClient(
 );
 
 // Keep in sync with AD_BOOST_MULTIPLIER in activate-boost.js
-const AD_BOOST_MULTIPLIER = 2.0;
+const AD_BOOST_MULTIPLIER = 1.5;
 
 // Adsgram calls this directly from THEIR server after confirming a user
 // genuinely watched an ad to completion — not triggered by the user's
