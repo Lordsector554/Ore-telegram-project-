@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <style>
   :root{
     --bg:#121016;
@@ -365,6 +366,7 @@
         <div class="game-title">Withdraw ORE</div>
         <div class="game-stake">Minimum withdrawal: 1,500 ORE</div>
         <input type="number" id="withdraw-ore-amount" class="withdraw-input" placeholder="Amount in ORE" min="1500" step="1">
+        <input type="text" id="withdraw-ore-address" class="withdraw-input" placeholder="Your TON wallet address">
         <div class="game-result" id="withdraw-ore-result"></div>
         <button class="upgrade-btn" id="withdraw-ore-confirm-btn">Request withdrawal</button>
         <button class="game-close" id="withdraw-ore-close" style="margin-top:12px;">Close</button>
@@ -391,7 +393,7 @@
     <div class="game-overlay" id="withdraw-overlay" hidden>
       <div class="game-modal">
         <div class="game-title">Withdraw TON</div>
-        <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 0.20 TON</div>
+        <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 5.00 TON</div>
         <input type="number" id="withdraw-amount" class="withdraw-input" placeholder="Amount in TON" min="5" step="0.01">
         <input type="text" id="withdraw-address" class="withdraw-input" placeholder="Your TON wallet address">
         <div class="game-result" id="withdraw-result"></div>
@@ -410,8 +412,8 @@
 
     <div class="stats-row">
       <div class="stat-box"><div class="n" id="home-rank">Level 2</div><div class="l">Miner rank</div></div>
-      <div class="stat-box"><div class="n">18</div><div class="l">Day streak</div></div>
-      <div class="stat-box"><div class="n">#1,204</div><div class="l">Global rank</div></div>
+      <div class="stat-box"><div class="n" id="home-streak">0</div><div class="l">Day streak</div></div>
+      <div class="stat-box"><div class="n" id="home-global-rank">#—</div><div class="l">Global rank</div></div>
     </div>
   </section>
 
@@ -425,9 +427,9 @@
       <div class="task-icon">📅</div>
       <div class="task-info">
         <div class="task-name">Daily check-in</div>
-        <div class="task-reward">+50 ORE</div>
+        <div class="task-reward">+0.50 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="50" data-task-key="daily_checkin">Claim</button>
+      <button class="task-btn claim" data-reward="0.50" data-task-key="daily_checkin">Claim</button>
     </div>
 
     <div class="task-group-label">Social &amp; partners</div>
@@ -435,25 +437,41 @@
       <div class="task-icon" id="join-channel-open" style="cursor:pointer;">📣</div>
       <div class="task-info" id="join-channel-info" style="cursor:pointer;">
         <div class="task-name">Join our Telegram channel</div>
-        <div class="task-reward">Tap to open · then Verify · +0.01 TON</div>
+        <div class="task-reward">Tap to open · then Verify · +2.00 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.01" data-task-key="join_channel" data-unlocks-referral="true">Verify</button>
+      <button class="task-btn claim" data-reward="2.00" data-task-key="join_channel" data-unlocks-referral="true">Verify</button>
+    </div>
+    <div class="task-item">
+      <div class="task-icon" id="join-payout-channel-open" style="cursor:pointer;">💸</div>
+      <div class="task-info" id="join-payout-channel-info" style="cursor:pointer;">
+        <div class="task-name">Join our payout channel</div>
+        <div class="task-reward">Tap to open · then Verify · +1.00 TON</div>
+      </div>
+      <button class="task-btn claim" data-reward="1.00" data-task-key="join_payout_channel" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
       <div class="task-icon" id="follow-x-open" style="cursor:pointer;">🐦</div>
       <div class="task-info" id="follow-x-info" style="cursor:pointer;">
         <div class="task-name">Follow on X</div>
-        <div class="task-reward">Tap to open · then Claim · +0.005 TON</div>
+        <div class="task-reward">Tap to open · then Claim · +1.50 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.005" data-task-key="follow_x">Claim</button>
+      <button class="task-btn claim" data-reward="1.50" data-task-key="follow_x">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🎬</div>
       <div class="task-info">
         <div class="task-name">Watch partner video</div>
-        <div class="task-reward">+0.005 TON</div>
+        <div class="task-reward">+0.30 TON · resets every 3 hrs</div>
       </div>
-      <button class="task-btn claim" data-reward="0.005" data-task-key="watch_video">Claim</button>
+      <button class="task-btn claim" data-reward="0.30" data-task-key="watch_video">Claim</button>
+    </div>
+    <div class="task-item">
+      <div class="task-icon" id="react-message-open" style="cursor:pointer;">❤️</div>
+      <div class="task-info" id="react-message-info" style="cursor:pointer;">
+        <div class="task-name">React to our latest message</div>
+        <div class="task-reward">Tap to open · then Claim · +0.20 TON · resets every 3 hrs</div>
+      </div>
+      <button class="task-btn claim" data-reward="0.20" data-task-key="react_message">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">👥</div>
@@ -512,8 +530,8 @@
         </div>
       </div>
       <div class="rig-bar-track"><div class="rig-bar-fill" id="rig-bar-fill"></div></div>
-      <div class="rig-bar-label"><span id="rig-bar-label">20.00 / 0.5 TON</span><span id="rig-bar-pct">64%</span></div>
-      <button class="upgrade-btn" id="upgrade-btn" data-cost="0.5">Upgrade to Level 3 · 0.5 TON</button>
+      <div class="rig-bar-label"><span id="rig-bar-label">12.80 / 20.00 TON</span><span id="rig-bar-pct">64%</span></div>
+      <button class="upgrade-btn" id="upgrade-btn" data-cost="20.00">Upgrade to Level 3 · 20.00 TON</button>
     </div>
 
     <div class="task-group-label">Boosters</div>
@@ -531,7 +549,7 @@
         <div class="booster-name">Offline protection</div>
         <div class="booster-desc">Keep earning while away, 6 hrs</div>
       </div>
-      <button class="task-btn">400 ORE</button>
+      <button class="task-btn locked">400 ORE</button>
     </div>
   </section>
 
@@ -543,7 +561,7 @@
     <div class="refer-locked" id="refer-locked" style="display:none;">
       <div class="refer-card" style="text-align:left;">
         <div style="font-size:15px; font-weight:600; margin-bottom:6px;">Referrals are locked</div>
-        <div style="color:var(--muted); font-size:13.5px; margin-bottom:16px;">Verify the "Join our Telegram channel" task to unlock your invite link.</div>
+        <div style="color:var(--muted); font-size:13.5px; margin-bottom:16px;">Verify both the "Join our Telegram channel" and "Join our payout channel" tasks to unlock your invite link.</div>
         <button class="upgrade-btn" id="refer-go-to-tasks">Go to Tasks</button>
       </div>
     </div>
@@ -762,11 +780,21 @@
   const DICE_FACES = {1:'⚀',2:'⚁',3:'⚂',4:'⚃',5:'⚄',6:'⚅'};
   const BOTTLE_FACES = { white:'⚪', black:'⚫' };
 
+  // Keep in sync with RIG_LEVELS in api/upgrade-rig.js — used only to show
+  // the correct upgrade button text/cost right after the app loads.
+  const RIG_LEVELS_DISPLAY = {
+    2: { nextLevel: 3, cost: 20.00 },
+    3: { nextLevel: 4, cost: 35.00 },
+    4: { nextLevel: 5, cost: 60.00 }
+  };
+
   // ====== EASY-EDIT APP SETTINGS ======
-  // Fill these in with your real bot, channel, and X (Twitter) usernames (no @ symbol).
-  const BOT_USERNAME = '@Oreontonminer_bot';        // change to your real bot's username
-  const CHANNEL_USERNAME = 'ORE_Announcement';  // change to your real channel's username
-  const X_USERNAME = 'itz_tripleE';        // change to your real X/Twitter username
+  // Fill these in with your real bot, channel, X (Twitter), and Adsgram values.
+  const BOT_USERNAME = '@Oreontonminer_bot';                // change to your real bot's username
+  const CHANNEL_USERNAME = 'ORE_Announcement';          // change to your real channel's username
+  const PAYOUT_CHANNEL_USERNAME = 'ORE_payoutchannel'; // must match process-withdrawals.js
+  const X_USERNAME = 'itz_tripleE';                // change to your real X/Twitter username
+  const ADSGRAM_BLOCK_ID = 'your-block-id';        // from https://partner.adsgram.ai
   // =====================================
 
   function openTelegramLink(username){
@@ -790,15 +818,19 @@
 
   document.getElementById('join-channel-open').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
   document.getElementById('join-channel-info').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
+  document.getElementById('join-payout-channel-open').addEventListener('click', () => openTelegramLink(PAYOUT_CHANNEL_USERNAME));
+  document.getElementById('join-payout-channel-info').addEventListener('click', () => openTelegramLink(PAYOUT_CHANNEL_USERNAME));
   document.getElementById('follow-x-open').addEventListener('click', () => openExternalLink(`https://x.com/${X_USERNAME}`));
   document.getElementById('follow-x-info').addEventListener('click', () => openExternalLink(`https://x.com/${X_USERNAME}`));
+  document.getElementById('react-message-open').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
+  document.getElementById('react-message-info').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
 
   // ====== EASY-EDIT GAME SETTINGS ======
   // Change these three numbers whenever you like — everything on screen
   // (task cards, the game popup, and the payout math) updates automatically.
-  const WIN_CHANCE = 0.65;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
-  const STAKE = 0.3;             // TON required to play one round
-  const PAYOUT_MULTIPLIER = 1.3;  // win amount = STAKE x this number
+  const WIN_CHANCE = 0.38;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
+  const STAKE = 1.00;             // TON required to play one round
+  const PAYOUT_MULTIPLIER = 1.9;  // win amount = STAKE x this number
   // ======================================
   const PAYOUT = STAKE * PAYOUT_MULTIPLIER;
 
@@ -957,7 +989,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
-  });
+      });
       const data = await res.json();
       if (res.status !== 200) return;
 
@@ -1069,24 +1101,70 @@
 
   // ---- Rig upgrade (paid in TON) ----
   const upgradeBtn = document.getElementById('upgrade-btn');
-  upgradeBtn.addEventListener('click', () => {
+  upgradeBtn.addEventListener('click', async () => {
     const cost = parseFloat(upgradeBtn.dataset.cost);
-    if (tonBalance < cost){
-      const original = upgradeBtn.textContent;
-      upgradeBtn.textContent = 'Not enough TON';
-      setTimeout(() => { upgradeBtn.textContent = original; }, 1600);
+
+    if (!telegramMode){
+      // Demo mode fallback (not inside Telegram) — same visual-only preview as before
+      if (tonBalance < cost){
+        const original = upgradeBtn.textContent;
+        upgradeBtn.textContent = 'Not enough TON';
+        setTimeout(() => { upgradeBtn.textContent = original; }, 1600);
+        return;
+      }
+      tonBalance -= cost;
+      renderTon();
+      document.getElementById('rig-level').textContent = 'Rig · Level 3';
+      document.getElementById('rig-tag').textContent = 'Next: Level 4';
+      document.getElementById('rig-rate-n').textContent = '180';
+      document.getElementById('rig-bar-fill').style.width = '0%';
+      document.getElementById('rig-bar-label').textContent = '0.00 / 35.00 TON';
+      document.getElementById('rig-bar-pct').textContent = '0%';
+      upgradeBtn.textContent = 'Upgrade to Level 4 · 35.00 TON';
+      upgradeBtn.dataset.cost = '35.00';
       return;
     }
-    tonBalance -= cost;
-    renderTon();
-    document.getElementById('rig-level').textContent = 'Rig · Level 3';
-    document.getElementById('rig-tag').textContent = 'Next: Level 4';
-    document.getElementById('rig-rate-n').textContent = '180';
-    document.getElementById('rig-bar-fill').style.width = '0%';
-    document.getElementById('rig-bar-label').textContent = '0.00 / 35.00 TON';
-    document.getElementById('rig-bar-pct').textContent = '0%';
-    upgradeBtn.textContent = 'Upgrade to Level 4 · 0.50 TON';
-    upgradeBtn.dataset.cost = '0.50';
+
+    const original = upgradeBtn.textContent;
+    upgradeBtn.disabled = true;
+    upgradeBtn.textContent = 'Upgrading…';
+    try {
+      const res = await fetch('/api/upgrade-rig', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+      });
+      const data = await res.json();
+      if (res.status === 200){
+        tonBalance = parseFloat(data.user.ton_balance);
+        renderTon();
+        document.getElementById('rig-level').textContent = `Rig · Level ${data.newLevel}`;
+        document.getElementById('rig-rate-n').textContent = data.newRate;
+        document.getElementById('home-rank').textContent = `Level ${data.newLevel}`;
+        if (data.nextCost){
+          document.getElementById('rig-tag').textContent = `Next: Level ${data.newLevel + 1}`;
+          document.getElementById('rig-bar-fill').style.width = '0%';
+          document.getElementById('rig-bar-label').textContent = `0.00 / ${data.nextCost.toFixed(2)} TON`;
+          document.getElementById('rig-bar-pct').textContent = '0%';
+          upgradeBtn.textContent = `Upgrade to Level ${data.newLevel + 1} · ${data.nextCost.toFixed(2)} TON`;
+          upgradeBtn.dataset.cost = data.nextCost.toFixed(2);
+          upgradeBtn.disabled = false;
+        } else {
+          document.getElementById('rig-tag').textContent = 'Max level reached';
+          upgradeBtn.textContent = 'Max level reached';
+          upgradeBtn.disabled = true;
+        }
+      } else {
+        upgradeBtn.textContent = data.error || 'Upgrade failed';
+        upgradeBtn.disabled = false;
+        setTimeout(() => { upgradeBtn.textContent = original; }, 1800);
+      }
+    } catch (err) {
+      console.error('upgrade-rig failed:', err);
+      upgradeBtn.textContent = 'Connection error';
+      upgradeBtn.disabled = false;
+      setTimeout(() => { upgradeBtn.textContent = original; }, 1800);
+    }
   });
 
   // ---- Referral copy button ----
@@ -1169,7 +1247,7 @@
   });
 
   // ---- Withdraw TON ----
-  const MIN_TON_WITHDRAW = 0.20;
+  const MIN_TON_WITHDRAW = 5.00;
   const withdrawTonBtn = document.getElementById('withdraw-ton-btn');
   const withdrawOverlay = document.getElementById('withdraw-overlay');
   const withdrawAmountInput = document.getElementById('withdraw-amount');
@@ -1245,7 +1323,7 @@
   // ---- Withdraw ORE ----
   // Flip this to true once you're ready to let people withdraw ORE.
   // Everything else (the modal, the minimum, the pending status) is already built.
-  const ORE_WITHDRAWALS_ENABLED = true;
+  const ORE_WITHDRAWALS_ENABLED = false;
   const MIN_ORE_WITHDRAW = 1500;
   const withdrawOreBtn = document.getElementById('withdraw-ore-btn');
   const withdrawOreOverlay = document.getElementById('withdraw-ore-overlay');
@@ -1256,8 +1334,8 @@
     withdrawOreBtn.textContent = 'Withdraw ORE';
   } else {
     withdrawOreBtn.textContent = 'Withdraw ORE · coming soon';
-  }
-
+    }
+  
   withdrawOreBtn.addEventListener('click', () => {
     if (!ORE_WITHDRAWALS_ENABLED){
       const original = withdrawOreBtn.textContent;
@@ -1295,14 +1373,18 @@
     withdrawOreResult.className = 'game-result pending';
   });
 
-  // ---- Watch ad for a 1.5x boost on your NEXT mine claim ----
-  // Inside Telegram, this calls /api/activate-boost, which is real and
-  // persists until actually consumed by your next mine claim — no time
-  // window to miss, unlike the old 1-hour version.
+  // ---- Watch ad for a 2x boost on your NEXT mine claim ----
+  // Real Adsgram integration: the boost is only granted inside the .then()
+  // callback, which Adsgram only fires if the ad was genuinely watched
+  // through — skipping or an ad error goes to .catch() and grants nothing.
   const adBoostBtn = document.getElementById('ad-boost-btn');
   const adBoostDesc = document.getElementById('ad-boost-desc');
   const BASE_RATE = 120;
   let adBoostQueued = false;
+  let AdController = null;
+  if (window.Adsgram){
+    AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+  }
 
   function setBoostQueuedUI(){
     adBoostQueued = true;
@@ -1318,13 +1400,35 @@
     adBoostDesc.textContent = 'Watch a short ad to activate';
   }
 
-  adBoostBtn.addEventListener('click', async () => {
+  async function grantRealBoost(){
+    try {
+      const res = await fetch('/api/activate-boost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+      });
+      const data = await res.json();
+      if (res.status === 200){
+        setBoostQueuedUI();
+      } else {
+        adBoostDesc.textContent = data.error || 'Something went wrong';
+        adBoostBtn.disabled = false;
+        setTimeout(() => { adBoostDesc.textContent = 'Watch a short ad to activate'; }, 1800);
+      }
+    } catch (err) {
+      console.error('activate-boost failed:', err);
+      adBoostDesc.textContent = 'Connection error — try again';
+      adBoostBtn.disabled = false;
+    }
+  }
+
+  adBoostBtn.addEventListener('click', () => {
     if (adBoostQueued) return;
-    adBoostBtn.disabled = true;
-    adBoostDesc.textContent = 'Loading ad…';
 
     if (!telegramMode){
       // Demo mode fallback: same fake local preview as before, no persistence
+      adBoostBtn.disabled = true;
+      adBoostDesc.textContent = 'Loading ad…';
       setTimeout(() => {
         const boosted = BASE_RATE * 2;
         document.getElementById('home-rate-text').textContent = `+${boosted} ORE / hr (2x active)`;
@@ -1339,27 +1443,26 @@
       return;
     }
 
-    setTimeout(async () => {
-      try {
-        const res = await fetch('/api/activate-boost', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
-        });
-        const data = await res.json();
-        if (res.status === 200){
-          setBoostQueuedUI();
-        } else {
-          adBoostDesc.textContent = data.error || 'Something went wrong';
-          adBoostBtn.disabled = false;
-          setTimeout(() => { adBoostDesc.textContent = 'Watch a short ad to activate'; }, 1800);
-        }
-      } catch (err) {
-        console.error('activate-boost failed:', err);
-        adBoostDesc.textContent = 'Connection error — try again';
+    if (!AdController){
+      adBoostDesc.textContent = 'Ads unavailable right now';
+      setTimeout(() => { adBoostDesc.textContent = 'Watch a short ad to activate'; }, 1800);
+      return;
+    }
+
+    adBoostBtn.disabled = true;
+    adBoostDesc.textContent = 'Loading ad…';
+
+    AdController.show()
+      .then(() => {
+        // Ad genuinely watched through — grant the real boost
+        grantRealBoost();
+      })
+      .catch(() => {
+        // Skipped, closed early, or failed to load — no reward
+        adBoostDesc.textContent = 'Ad skipped — no boost this time';
         adBoostBtn.disabled = false;
-      }
-    }, 1200);
+        setTimeout(() => { adBoostDesc.textContent = 'Watch a short ad to activate'; }, 1800);
+      });
   });
 
   // ---- Telegram Mini App init ----
@@ -1429,12 +1532,35 @@
           // Home page rank stat
           document.getElementById('home-rank').textContent = `Level ${data.user.rig_level || 2}`;
 
+          // Real day streak and global rank
+          if (typeof data.streakCount === 'number'){
+            document.getElementById('home-streak').textContent = data.streakCount;
+          }
+          if (typeof data.globalRank === 'number'){
+            document.getElementById('home-global-rank').textContent = '#' + data.globalRank.toLocaleString();
+          }
+
+          // Sync the rig display with the real saved level/rate — fixes it
+          // showing "Level 2" forever even after a real upgrade
+          document.getElementById('rig-level').textContent = `Rig · Level ${data.user.rig_level || 2}`;
+          document.getElementById('rig-rate-n').textContent = data.user.mining_rate || 120;
+          const rigInfo = RIG_LEVELS_DISPLAY[data.user.rig_level];
+          if (rigInfo){
+            document.getElementById('rig-tag').textContent = `Next: Level ${rigInfo.nextLevel}`;
+            document.getElementById('upgrade-btn').textContent = `Upgrade to Level ${rigInfo.nextLevel} · ${rigInfo.cost.toFixed(2)} TON`;
+            document.getElementById('upgrade-btn').dataset.cost = rigInfo.cost.toFixed(2);
+          } else {
+            document.getElementById('rig-tag').textContent = 'Max level reached';
+            document.getElementById('upgrade-btn').textContent = 'Max level reached';
+            document.getElementById('upgrade-btn').disabled = true;
+          }
+
           // Show whether a boost is already queued from a past session
           if (parseFloat(data.user.next_claim_multiplier || 1) > 1){
             setBoostQueuedUI();
           }
 
-                    // Sync the mine button to the real cooldown, based on when this
+          // Sync the mine button to the real cooldown, based on when this
           // user last actually claimed (from the database, not local memory).
           if (data.user.last_mine_claim){
             const secondsSince = (Date.now() - new Date(data.user.last_mine_claim).getTime()) / 1000;
