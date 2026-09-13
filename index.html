@@ -512,8 +512,8 @@
         </div>
       </div>
       <div class="rig-bar-track"><div class="rig-bar-fill" id="rig-bar-fill"></div></div>
-      <div class="rig-bar-label"><span id="rig-bar-label">12.80 / 20.00 TON</span><span id="rig-bar-pct">64%</span></div>
-      <button class="upgrade-btn" id="upgrade-btn" data-cost="20.00">Upgrade to Level 3 · 20.00 TON</button>
+      <div class="rig-bar-label"><span id="rig-bar-label">20.00 / 0.5 TON</span><span id="rig-bar-pct">64%</span></div>
+      <button class="upgrade-btn" id="upgrade-btn" data-cost="0.5">Upgrade to Level 3 · 0.5 TON</button>
     </div>
 
     <div class="task-group-label">Boosters</div>
@@ -531,7 +531,7 @@
         <div class="booster-name">Offline protection</div>
         <div class="booster-desc">Keep earning while away, 6 hrs</div>
       </div>
-      <button class="task-btn locked">400 ORE</button>
+      <button class="task-btn">400 ORE</button>
     </div>
   </section>
 
@@ -796,9 +796,9 @@
   // ====== EASY-EDIT GAME SETTINGS ======
   // Change these three numbers whenever you like — everything on screen
   // (task cards, the game popup, and the payout math) updates automatically.
-  const WIN_CHANCE = 0.38;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
-  const STAKE = 1.00;             // TON required to play one round
-  const PAYOUT_MULTIPLIER = 1.9;  // win amount = STAKE x this number
+  const WIN_CHANCE = 0.65;        // chance the player wins each round, 0 to 1 (e.g. 0.38 = 38%)
+  const STAKE = 0.3;             // TON required to play one round
+  const PAYOUT_MULTIPLIER = 1.3;  // win amount = STAKE x this number
   // ======================================
   const PAYOUT = STAKE * PAYOUT_MULTIPLIER;
 
@@ -1169,7 +1169,7 @@
   });
 
   // ---- Withdraw TON ----
-  const MIN_TON_WITHDRAW = 5.00;
+  const MIN_TON_WITHDRAW = 0.20;
   const withdrawTonBtn = document.getElementById('withdraw-ton-btn');
   const withdrawOverlay = document.getElementById('withdraw-overlay');
   const withdrawAmountInput = document.getElementById('withdraw-amount');
@@ -1295,7 +1295,7 @@
     withdrawOreResult.className = 'game-result pending';
   });
 
-  // ---- Watch ad for a 2x boost on your NEXT mine claim ----
+  // ---- Watch ad for a 1.5x boost on your NEXT mine claim ----
   // Inside Telegram, this calls /api/activate-boost, which is real and
   // persists until actually consumed by your next mine claim — no time
   // window to miss, unlike the old 1-hour version.
