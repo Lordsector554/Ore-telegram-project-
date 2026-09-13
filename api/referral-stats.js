@@ -6,6 +6,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Keep in sync with REFERRAL_TON_BONUS in claim-task.js — this is
+// display-only here, sent to the frontend so it never drifts out of sync
+// with what actually gets paid.
+const REFERRAL_TON_BONUS = 2.00;
+
 function verifyTelegramInitData(initData, botToken) {
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
@@ -50,6 +55,7 @@ module.exports = async (req, res) => {
     friendsCount: (friends || []).length,
     referralOreEarned: parseFloat(user.referral_ore_earned || 0),
     referralTonEarned: parseFloat(user.referral_ton_earned || 0),
+    referralBonusAmount: REFERRAL_TON_BONUS,
     friends: (friends || []).map(f => ({
       name: f.first_name || f.username || 'Friend',
       joinedAt: f.created_at
