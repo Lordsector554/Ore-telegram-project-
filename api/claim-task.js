@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+    const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
@@ -7,19 +7,30 @@ const supabase = createClient(
 );
 
 // ====== EASY-EDIT SETTINGS ======
-// Keep CHANNEL_USERNAME in sync with the same-named constant in index.html.
-const CHANNEL_USERNAME = 'ORE_Announcement'; // no @, no link — just the username
-const REFERRAL_TON_BONUS = 0.02; // paid once to the referrer when their invite completes this task
+// Keep both usernames in sync with the same-named constants in index.html
+// (and PAYOUT_CHANNEL_USERNAME with process-withdrawals.js too).
+const CHANNEL_USERNAME = 'YourChannel';              // no @, no link — just the username
+const PAYOUT_CHANNEL_USERNAME = 'YourPayoutChannel'; // no @, no link
+const REFERRAL_TON_BONUS = 2.00; // paid once to the referrer when BOTH gate tasks below are done
 
 // Every claimable task and what it pays. This list is authoritative —
 // whatever index.html shows, this is what actually decides and pays out.
 // Add a new entry here whenever you add a new claimable task to the page.
+//
+// dailyReset: resets at UTC midnight, regardless of when it was claimed.
+// resetSeconds: rolling window — claimable again N seconds after the last claim.
+// Neither: one-time only, forever.
+// verifyChannel: set to the channel username to check real membership against.
+// isReferralGate: referral unlock + bonus only fire once ALL gate tasks are done.
 const TASKS = {
-  daily_checkin: { reward: 50, currency: 'ORE', dailyReset: true },
-  join_channel:  { reward: 0.01, currency: 'TON', verifyChannel: true, unlocksReferral: true },
-  follow_x:      { reward: 0.005, currency: 'TON' },
-  watch_video:   { reward: 0.005, currency: 'TON' }
+  daily_checkin:       { reward: 0.50, currency: 'TON', dailyReset: true },
+  join_channel:        { reward: 2.00, currency: 'TON', verifyChannel: CHANNEL_USERNAME, isReferralGate: true },
+  join_payout_channel: { reward: 1.00, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
+  follow_x:            { reward: 1.50, currency: 'TON' },
+  watch_video:         { reward: 0.30, currency: 'TON', resetSeconds: 10800 }, // 3 hours
+  react_message:       { reward: 0.20, currency: 'TON', resetSeconds: 10800 } // 3 hours — honor-system, not verified
 };
+const REFERRAL_GATE_TASKS = ['join_channel', 'join_payout_channel'];
 // =================================
 
 function verifyTelegramInitData(initData, botToken) {
@@ -33,11 +44,11 @@ function verifyTelegramInitData(initData, botToken) {
   return computedHash === hash;
 }
 
-// Asks Telegram directly whether this user is really in the channel.
+// Asks Telegram directly whether this user is really in the given channel.
 // This is the ONLY task type that can be checked this way — everything
-// else (follow on X, watch a video) has to stay honor-system.
-async function isChannelMember(telegramId) {
-  const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getChatMember?chat_id=@${CHANNEL_USERNAME}&user_id=${telegramId}`;
+// else (follow on X, watch a video, react to a message) has to stay honor-system.
+async function isChannelMember(telegramId, channelUsername) {
+  const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getChatMember?chat_id=@${channelUsername}&user_id=${telegramId}`;
   const res = await fetch(url);
   const data = await res.json();
   console.log('getChatMember response:', JSON.stringify(data)); // check this in Vercel Logs
@@ -86,24 +97,33 @@ module.exports = async (req, res) => {
   if (task.dailyReset) {
     const alreadyToday = (existing || []).some(row => row.completed_at.slice(0, 10) === todayString());
     if (alreadyToday) return res.status(409).json({ error: 'Already claimed today' });
+  } else if (task.resetSeconds) {
+    const mostRecentMs = (existing || []).reduce((latest, row) => {
+      const t = new Date(row.completed_at).getTime();
+      return t > latest ? t : latest;
+    }, 0);
+    if (mostRecentMs) {
+      const secondsSince = (Date.now() - mostRecentMs) / 1000;
+      if (secondsSince < task.resetSeconds) {
+        const secondsLeft = Math.ceil(task.resetSeconds - secondsSince);
+        return res.status(409).json({ error: 'Not ready yet', secondsLeft });
+      }
+    }
   } else if (existing && existing.length > 0) {
     return res.status(409).json({ error: 'Already claimed' });
   }
 
   if (task.verifyChannel) {
-    const member = await isChannelMember(tgUser.id);
-    if (!member) return res.status(403).json({ error: 'Not a member of the channel yet' });
+    const member = await isChannelMember(tgUser.id, task.verifyChannel);
+    if (!member) return res.status(403).json({ error: 'Not a member of that channel yet' });
   }
 
   const balanceField = task.currency === 'TON' ? 'ton_balance' : 'ore_balance';
   const newBalance = parseFloat(user[balanceField]) + task.reward;
 
-  const updates = { [balanceField]: newBalance };
-  if (task.unlocksReferral) updates.joined_channel = true;
-
   const { data: updatedUser, error: updateError } = await supabase
     .from('users')
-    .update(updates)
+    .update({ [balanceField]: newBalance })
     .eq('id', user.id)
     .select()
     .single();
@@ -117,24 +137,41 @@ module.exports = async (req, res) => {
     currency: task.currency
   });
 
-  // One-time referral bonus: pays out the first (and only) time this user
-  // completes the channel-join task. task_completions already stops this
-  // task being claimed twice, so this can't accidentally fire more than once.
-  if (task.unlocksReferral && user.referred_by) {
-    const { data: referrer } = await supabase
-      .from('users')
-      .select('ton_balance, referral_ton_earned')
-      .eq('id', user.referred_by)
-      .single();
+  // Referral unlock + one-time bonus: only fires once ALL gate tasks are
+  // done (currently join_channel AND join_payout_channel), and only once
+  // ever — guarded by the joined_channel flag, which is only ever set here.
+  let unlockedReferral = false;
+  if (task.isReferralGate && !user.joined_channel) {
+    const { data: gateCompletions } = await supabase
+      .from('task_completions')
+      .select('task_key')
+      .eq('user_id', user.id)
+      .in('task_key', REFERRAL_GATE_TASKS);
 
-    if (referrer) {
-      await supabase
-        .from('users')
-        .update({
-          ton_balance: parseFloat(referrer.ton_balance) + REFERRAL_TON_BONUS,
-          referral_ton_earned: parseFloat(referrer.referral_ton_earned || 0) + REFERRAL_TON_BONUS
-        })
-        .eq('id', user.referred_by);
+    const doneKeys = new Set((gateCompletions || []).map(c => c.task_key));
+    const allGatesDone = REFERRAL_GATE_TASKS.every(key => doneKeys.has(key));
+
+    if (allGatesDone) {
+      unlockedReferral = true;
+      await supabase.from('users').update({ joined_channel: true }).eq('id', user.id);
+
+      if (user.referred_by) {
+        const { data: referrer } = await supabase
+          .from('users')
+          .select('ton_balance, referral_ton_earned')
+          .eq('id', user.referred_by)
+          .single();
+
+        if (referrer) {
+          await supabase
+            .from('users')
+            .update({
+              ton_balance: parseFloat(referrer.ton_balance) + REFERRAL_TON_BONUS,
+              referral_ton_earned: parseFloat(referrer.referral_ton_earned || 0) + REFERRAL_TON_BONUS
+            })
+            .eq('id', user.referred_by);
+        }
+      }
     }
   }
 
@@ -142,6 +179,6 @@ module.exports = async (req, res) => {
     user: updatedUser,
     rewarded: task.reward,
     currency: task.currency,
-    unlockedReferral: !!task.unlocksReferral
+    unlockedReferral
   });
 };
