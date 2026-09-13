@@ -10,9 +10,9 @@ const supabase = createClient(
 // Keep these in sync with the same-named constants in index.html —
 // that copy is only used for the browser-preview demo now; this copy
 // is what actually decides real games and pays real TON.
-const WIN_CHANCE = 0.40;
+const WIN_CHANCE = 0.65;
 const STAKE = 0.3;
-const PAYOUT_MULTIPLIER = 1.4;
+const PAYOUT_MULTIPLIER = 1.3;
 // =================================
 const PAYOUT = STAKE * PAYOUT_MULTIPLIER;
 
