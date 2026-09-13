@@ -9,7 +9,7 @@ const supabase = createClient(
 // ====== EASY-EDIT SETTINGS ======
 // Your real receiving wallet — only ever used to RECEIVE deposits, never
 // to send anything. Keep this separate from your withdrawal wallet.
-const DEPOSIT_ADDRESS = 'UQA_COfGxFNQH7OWd3tjsy5KsBwnDQa-0I08Z3puY0ubN-bq';
+const DEPOSIT_ADDRESS = 'PUT_YOUR_REAL_DEPOSIT_WALLET_ADDRESS_HERE';
 // =================================
 
 function verifyTelegramInitData(initData, botToken) {
@@ -125,19 +125,47 @@ module.exports = async (req, res) => {
     existingUser = newUser;
   }
 
-  // NEW: tell the frontend which tasks are already done, so checkmarks
-  // show correctly on load instead of only after the button is tapped again.
-  // Daily tasks only count as "done" if completed today (UTC) — they should
-  // reset to claimable each day.
+  // Rolling-reset tasks — keep in sync with resetSeconds values in claim-task.js
+  const TASK_RESET_SECONDS = { watch_video: 10800, react_message: 10800 };
+
+  // Tell the frontend which tasks are already done, so checkmarks show
+  // correctly on load instead of only after the button is tapped again.
   const { data: completions } = await supabase
     .from('task_completions')
     .select('task_key, completed_at')
     .eq('user_id', existingUser.id);
 
   const today = new Date().toISOString().slice(0, 10);
+  const nowMs = Date.now();
   const completedTasks = (completions || [])
-    .filter(c => c.task_key !== 'daily_checkin' || c.completed_at.slice(0, 10) === today)
+    .filter(c => {
+      if (c.task_key === 'daily_checkin') return c.completed_at.slice(0, 10) === today;
+      if (TASK_RESET_SECONDS[c.task_key]) {
+        const secondsSince = (nowMs - new Date(c.completed_at).getTime()) / 1000;
+        return secondsSince < TASK_RESET_SECONDS[c.task_key];
+      }
+      return true; // one-time tasks (join_channel, follow_x) stay done forever
+    })
     .map(c => c.task_key);
+
+  // Daily active-streak tracking
+  const todayDate = today;
+  let streakCount = existingUser.streak_count || 0;
+  if (existingUser.last_active_date !== todayDate) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    streakCount = existingUser.last_active_date === yesterday ? streakCount + 1 : 1;
+    await supabase
+      .from('users')
+      .update({ last_active_date: todayDate, streak_count: streakCount })
+      .eq('id', existingUser.id);
+  }
+
+  // Global rank — how many users have a higher ORE balance than this one
+  const { count: higherCount } = await supabase
+    .from('users')
+    .select('id', { count: 'exact', head: true })
+    .gt('ore_balance', existingUser.ore_balance);
+  const globalRank = (higherCount || 0) + 1;
 
   // Check for and credit any new deposits, then re-fetch the user so the
   // response reflects the up-to-date balance.
@@ -152,6 +180,8 @@ module.exports = async (req, res) => {
     user: refreshedUser || existingUser,
     completedTasks,
     depositAddress: DEPOSIT_ADDRESS,
-    depositMemo: existingUser.referral_code
+    depositMemo: existingUser.referral_code,
+    streakCount,
+    globalRank
   });
 };
