@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const MIN_TON_WITHDRAW = 5.00;
+const MIN_TON_WITHDRAW = 0.2;
 
 function verifyTelegramInitData(initData, botToken) {
   const params = new URLSearchParams(initData);
