@@ -8,7 +8,7 @@ const supabase = createClient(
 
 // ====== EASY-EDIT SETTINGS ======
 // Change this whenever you like — takes effect on the very next activation.
-const AD_BOOST_MULTIPLIER = 2.0;
+const AD_BOOST_MULTIPLIER = 1.5;
 // =================================
 
 function verifyTelegramInitData(initData, botToken) {
