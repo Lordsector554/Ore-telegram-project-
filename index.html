@@ -391,7 +391,7 @@
     <div class="game-overlay" id="withdraw-overlay" hidden>
       <div class="game-modal">
         <div class="game-title">Withdraw TON</div>
-        <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 5.00 TON</div>
+        <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 0.20 TON</div>
         <input type="number" id="withdraw-amount" class="withdraw-input" placeholder="Amount in TON" min="5" step="0.01">
         <input type="text" id="withdraw-address" class="withdraw-input" placeholder="Your TON wallet address">
         <div class="game-result" id="withdraw-result"></div>
@@ -1085,8 +1085,8 @@
     document.getElementById('rig-bar-fill').style.width = '0%';
     document.getElementById('rig-bar-label').textContent = '0.00 / 35.00 TON';
     document.getElementById('rig-bar-pct').textContent = '0%';
-    upgradeBtn.textContent = 'Upgrade to Level 4 · 35.00 TON';
-    upgradeBtn.dataset.cost = '35.00';
+    upgradeBtn.textContent = 'Upgrade to Level 4 · 0.50 TON';
+    upgradeBtn.dataset.cost = '0.50';
   });
 
   // ---- Referral copy button ----
@@ -1245,7 +1245,7 @@
   // ---- Withdraw ORE ----
   // Flip this to true once you're ready to let people withdraw ORE.
   // Everything else (the modal, the minimum, the pending status) is already built.
-  const ORE_WITHDRAWALS_ENABLED = false;
+  const ORE_WITHDRAWALS_ENABLED = true;
   const MIN_ORE_WITHDRAW = 1500;
   const withdrawOreBtn = document.getElementById('withdraw-ore-btn');
   const withdrawOreOverlay = document.getElementById('withdraw-ore-overlay');
