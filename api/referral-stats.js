@@ -9,7 +9,7 @@ const supabase = createClient(
 // Keep in sync with REFERRAL_TON_BONUS in claim-task.js — this is
 // display-only here, sent to the frontend so it never drifts out of sync
 // with what actually gets paid.
-const REFERRAL_TON_BONUS = 2.00;
+const REFERRAL_TON_BONUS = 0.02;
 
 function verifyTelegramInitData(initData, botToken) {
   const params = new URLSearchParams(initData);
