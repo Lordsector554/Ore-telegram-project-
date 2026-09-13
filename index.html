@@ -783,9 +783,9 @@
   // Keep in sync with RIG_LEVELS in api/upgrade-rig.js — used only to show
   // the correct upgrade button text/cost right after the app loads.
   const RIG_LEVELS_DISPLAY = {
-    2: { nextLevel: 3, cost: 20.00 },
-    3: { nextLevel: 4, cost: 35.00 },
-    4: { nextLevel: 5, cost: 60.00 }
+    2: { nextLevel: 3, cost: 0.5 },
+    3: { nextLevel: 4, cost: 1.00 },
+    4: { nextLevel: 5, cost: 2.50 }
   };
 
   // ====== EASY-EDIT APP SETTINGS ======
@@ -794,7 +794,7 @@
   const CHANNEL_USERNAME = 'ORE_Announcement';          // change to your real channel's username
   const PAYOUT_CHANNEL_USERNAME = 'ORE_payoutchannel'; // must match process-withdrawals.js
   const X_USERNAME = 'itz_tripleE';                // change to your real X/Twitter username
-  const ADSGRAM_BLOCK_ID = 'your-block-id';        // from https://partner.adsgram.ai
+  const ADSGRAM_BLOCK_ID = '47737';        // from https://partner.adsgram.ai
   // =====================================
 
   function openTelegramLink(username){
