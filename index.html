@@ -375,11 +375,14 @@
     <div class="game-overlay" id="deposit-overlay" hidden>
       <div class="game-modal">
         <div class="game-title">Deposit TON</div>
-        <div class="game-stake">Send TON to your personal address below</div>
-        <div class="deposit-address" id="deposit-address">UQAbc123demoTONaddressXYZ789</div>
+        <div class="game-stake">Send TON to the address below</div>
+        <div class="deposit-address" id="deposit-address">Loading your address…</div>
         <button class="copy-btn" id="deposit-copy-btn" style="margin-bottom:14px;">Copy address</button>
+        <div class="game-stake" style="color:var(--danger);">Important: include this memo in the transaction comment, or your deposit can't be matched to your account</div>
+        <div class="deposit-address" id="deposit-memo" style="color:var(--amber);">Loading…</div>
+        <button class="copy-btn" id="deposit-memo-copy-btn" style="margin-bottom:14px;">Copy memo</button>
         <div class="game-result" id="deposit-result"></div>
-        <button class="upgrade-btn" id="deposit-simulate-btn">I've sent it — check balance (demo)</button>
+        <button class="upgrade-btn" id="deposit-refresh-btn">Refresh balance</button>
         <button class="game-close" id="deposit-close" style="margin-top:12px;">Close</button>
       </div>
     </div>
@@ -390,8 +393,9 @@
         <div class="game-title">Withdraw TON</div>
         <div class="game-stake" id="withdraw-min-text">Minimum withdrawal: 5.00 TON</div>
         <input type="number" id="withdraw-amount" class="withdraw-input" placeholder="Amount in TON" min="5" step="0.01">
+        <input type="text" id="withdraw-address" class="withdraw-input" placeholder="Your TON wallet address">
         <div class="game-result" id="withdraw-result"></div>
-        <button class="upgrade-btn" id="withdraw-confirm-btn">Request withdrawal (demo)</button>
+        <button class="upgrade-btn" id="withdraw-confirm-btn">Request withdrawal</button>
         <button class="game-close" id="withdraw-close" style="margin-top:12px;">Close</button>
       </div>
     </div>
@@ -405,7 +409,7 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-box"><div class="n">Level 4</div><div class="l">Miner rank</div></div>
+      <div class="stat-box"><div class="n" id="home-rank">Level 2</div><div class="l">Miner rank</div></div>
       <div class="stat-box"><div class="n">18</div><div class="l">Day streak</div></div>
       <div class="stat-box"><div class="n">#1,204</div><div class="l">Global rank</div></div>
     </div>
@@ -436,10 +440,10 @@
       <button class="task-btn claim" data-reward="2.00" data-task-key="join_channel" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
-      <div class="task-icon">🐦</div>
-      <div class="task-info">
+      <div class="task-icon" id="follow-x-open" style="cursor:pointer;">🐦</div>
+      <div class="task-info" id="follow-x-info" style="cursor:pointer;">
         <div class="task-name">Follow on X</div>
-        <div class="task-reward">+1.50 TON</div>
+        <div class="task-reward">Tap to open · then Claim · +1.50 TON</div>
       </div>
       <button class="task-btn claim" data-reward="1.50" data-task-key="follow_x">Claim</button>
     </div>
@@ -483,7 +487,7 @@
   <div class="game-overlay" id="game-overlay" hidden>
     <div class="game-modal">
       <div class="game-title" id="game-title">Dice flip</div>
-       <div class="game-stake" id="game-stake">Stake 5.00 TON · win 9.50 TON</div>
+      <div class="game-stake" id="game-stake">Stake 5.00 TON · win 9.50 TON</div>
       <div class="game-visual" id="game-visual">🎲</div>
       <div class="game-result" id="game-result"></div>
       <div class="game-choices" id="game-choices"></div>
@@ -516,7 +520,7 @@
     <div class="booster-item">
       <div class="task-icon">⚡</div>
       <div class="booster-info">
-        <div class="booster-name">2x speed, 1 hour</div>
+        <div class="booster-name">2x on your next mine claim</div>
         <div class="booster-desc" id="ad-boost-desc">Watch a short ad to activate</div>
       </div>
       <button class="task-btn claim" id="ad-boost-btn">Use</button>
@@ -705,6 +709,10 @@
         balance = parseFloat(data.user.ore_balance);
         renderBalance();
         startCountdown(data.cycleSeconds);
+        setBoostAvailableUI(); // consumed either way — reset regardless of whether it was used
+        if (data.wasBoosted){
+          mineSubText.textContent = 'Boosted claim! Come back when the timer ends';
+        }
       } else if (res.status === 429){
         // Not ready yet — sync the countdown to what the server says is actually left
         startCountdown(data.secondsLeft);
@@ -755,9 +763,10 @@
   const BOTTLE_FACES = { white:'⚪', black:'⚫' };
 
   // ====== EASY-EDIT APP SETTINGS ======
-  // Fill these in with your real bot and channel usernames (no @ symbol).
+  // Fill these in with your real bot, channel, and X (Twitter) usernames (no @ symbol).
   const BOT_USERNAME = '@Oreontonminer_bot';        // change to your real bot's username
   const CHANNEL_USERNAME = 'ORE_Announcement';  // change to your real channel's username
+  const X_USERNAME = 'itz_tripleE';        // change to your real X/Twitter username
   // =====================================
 
   function openTelegramLink(username){
@@ -769,8 +778,20 @@
     }
   }
 
+  // For links OUTSIDE Telegram (like X/Twitter) — different Telegram WebApp
+  // method than openTelegramLink, which only works for t.me links.
+  function openExternalLink(url){
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink){
+      window.Telegram.WebApp.openLink(url);
+    } else {
+      window.open(url, '_blank');
+    }
+  }
+
   document.getElementById('join-channel-open').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
   document.getElementById('join-channel-info').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
+  document.getElementById('follow-x-open').addEventListener('click', () => openExternalLink(`https://x.com/${X_USERNAME}`));
+  document.getElementById('follow-x-info').addEventListener('click', () => openExternalLink(`https://x.com/${X_USERNAME}`));
 
   // ====== EASY-EDIT GAME SETTINGS ======
   // Change these three numbers whenever you like — everything on screen
@@ -936,7 +957,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
-      });
+  });
       const data = await res.json();
       if (res.status !== 200) return;
 
@@ -1081,12 +1102,16 @@
     }, 1800);
   });
 
-  // ---- Deposit (demo only — real version needs a backend watching the chain) ----
+  // ---- Deposit ----
+  // The address and memo shown are the real ones, sent from verify-user.js.
+  // Detection itself happens on the backend automatically every time the
+  // app opens — "Refresh balance" just re-checks right now, on demand.
   const depositBtn = document.getElementById('deposit-btn');
   const depositOverlay = document.getElementById('deposit-overlay');
   const depositResult = document.getElementById('deposit-result');
   const depositCopyBtn = document.getElementById('deposit-copy-btn');
-  const depositSimulateBtn = document.getElementById('deposit-simulate-btn');
+  const depositMemoCopyBtn = document.getElementById('deposit-memo-copy-btn');
+  const depositRefreshBtn = document.getElementById('deposit-refresh-btn');
 
   depositBtn.addEventListener('click', () => {
     depositResult.textContent = '';
@@ -1100,33 +1125,70 @@
     depositCopyBtn.textContent = 'Address copied';
     setTimeout(() => { depositCopyBtn.textContent = 'Copy address'; }, 1600);
   });
-  depositSimulateBtn.addEventListener('click', () => {
-    // Demo only: pretend 5 TON just arrived. The real version needs a backend
-    // job that watches your deposit address on-chain and credits Supabase
-    // automatically — nothing detects real deposits yet.
-    tonBalance += 5.00;
-    renderTon();
-    depositResult.textContent = '+5.00 TON credited (demo)';
-    depositResult.className = 'game-result win';
+  depositMemoCopyBtn.addEventListener('click', () => {
+    const memo = document.getElementById('deposit-memo').textContent;
+    navigator.clipboard?.writeText(memo).catch(()=>{});
+    depositMemoCopyBtn.textContent = 'Memo copied';
+    setTimeout(() => { depositMemoCopyBtn.textContent = 'Copy memo'; }, 1600);
   });
 
-  // ---- Withdraw TON (demo — real version needs a backend to actually send TON) ----
+  depositRefreshBtn.addEventListener('click', async () => {
+    if (!telegramMode){
+      depositResult.textContent = 'Deposit checking only works inside Telegram';
+      depositResult.className = 'game-result lose';
+      return;
+    }
+    const before = tonBalance;
+    depositRefreshBtn.disabled = true;
+    depositRefreshBtn.textContent = 'Checking…';
+    try {
+      const res = await fetch('/api/verify-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+      });
+      const data = await res.json();
+      if (data.user){
+        tonBalance = parseFloat(data.user.ton_balance);
+        renderTon();
+        if (tonBalance > before){
+          depositResult.textContent = `+${(tonBalance - before).toFixed(2)} TON credited`;
+          depositResult.className = 'game-result win';
+        } else {
+          depositResult.textContent = 'No new deposit found yet — try again in a minute';
+          depositResult.className = 'game-result pending';
+        }
+      }
+    } catch (err) {
+      console.error('deposit refresh failed:', err);
+      depositResult.textContent = 'Connection error — try again';
+      depositResult.className = 'game-result lose';
+    }
+    depositRefreshBtn.disabled = false;
+    depositRefreshBtn.textContent = 'Refresh balance';
+  });
+
+  // ---- Withdraw TON ----
   const MIN_TON_WITHDRAW = 5.00;
   const withdrawTonBtn = document.getElementById('withdraw-ton-btn');
   const withdrawOverlay = document.getElementById('withdraw-overlay');
   const withdrawAmountInput = document.getElementById('withdraw-amount');
+  const withdrawAddressInput = document.getElementById('withdraw-address');
   const withdrawResult = document.getElementById('withdraw-result');
 
   withdrawTonBtn.addEventListener('click', () => {
     withdrawAmountInput.value = '';
+    withdrawAddressInput.value = '';
     withdrawResult.textContent = '';
     withdrawResult.className = 'game-result';
     withdrawOverlay.hidden = false;
   });
   document.getElementById('withdraw-close').addEventListener('click', () => { withdrawOverlay.hidden = true; });
 
-  document.getElementById('withdraw-confirm-btn').addEventListener('click', () => {
+  document.getElementById('withdraw-confirm-btn').addEventListener('click', async () => {
     const amount = parseFloat(withdrawAmountInput.value);
+    const address = withdrawAddressInput.value.trim();
+
     if (isNaN(amount) || amount <= 0){
       withdrawResult.textContent = 'Enter a valid amount';
       withdrawResult.className = 'game-result lose';
@@ -1137,18 +1199,47 @@
       withdrawResult.className = 'game-result lose';
       return;
     }
+    if (!address){
+      withdrawResult.textContent = 'Enter your TON wallet address';
+      withdrawResult.className = 'game-result lose';
+      return;
+    }
     if (amount > tonBalance){
       withdrawResult.textContent = 'Not enough TON in your balance';
       withdrawResult.className = 'game-result lose';
       return;
     }
-    // Demo only: this deducts the balance right away so it can't be spent
-    // twice while pending. The real version needs an "admin approval" queue
-    // in Supabase — the transfer only actually sends once you approve it.
-    tonBalance -= amount;
-    renderTon();
-    withdrawResult.textContent = `${amount.toFixed(2)} TON withdrawal pending admin approval`;
-    withdrawResult.className = 'game-result pending';
+
+    if (!telegramMode){
+      // Demo mode fallback (not inside Telegram)
+      tonBalance -= amount;
+      renderTon();
+      withdrawResult.textContent = `${amount.toFixed(2)} TON withdrawal pending admin approval (demo)`;
+      withdrawResult.className = 'game-result pending';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/request-withdrawal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData, amount, walletAddress: address })
+      });
+      const data = await res.json();
+      if (res.status === 200){
+        tonBalance = parseFloat(data.user.ton_balance);
+        renderTon();
+        withdrawResult.textContent = `${amount.toFixed(2)} TON withdrawal pending admin approval`;
+        withdrawResult.className = 'game-result pending';
+      } else {
+        withdrawResult.textContent = data.error || 'Something went wrong';
+        withdrawResult.className = 'game-result lose';
+      }
+    } catch (err) {
+      console.error('request-withdrawal failed:', err);
+      withdrawResult.textContent = 'Connection error — try again';
+      withdrawResult.className = 'game-result lose';
+    }
   });
 
   // ---- Withdraw ORE ----
@@ -1204,34 +1295,70 @@
     withdrawOreResult.className = 'game-result pending';
   });
 
-  // ---- Watch ad for 2x mining speed (demo only) ----
+  // ---- Watch ad for a 2x boost on your NEXT mine claim ----
+  // Inside Telegram, this calls /api/activate-boost, which is real and
+  // persists until actually consumed by your next mine claim — no time
+  // window to miss, unlike the old 1-hour version.
   const adBoostBtn = document.getElementById('ad-boost-btn');
   const adBoostDesc = document.getElementById('ad-boost-desc');
   const BASE_RATE = 120;
-  const BOOST_SECONDS = 20; // demo length; real version would be a full hour
-  let adBoostActive = false;
+  let adBoostQueued = false;
 
-  adBoostBtn.addEventListener('click', () => {
-    if (adBoostActive) return;
-    adBoostActive = true;
+  function setBoostQueuedUI(){
+    adBoostQueued = true;
+    adBoostBtn.textContent = 'Queued';
+    adBoostBtn.disabled = true;
+    adBoostDesc.textContent = 'Boost ready — applies to your next mine claim';
+  }
+
+  function setBoostAvailableUI(){
+    adBoostQueued = false;
+    adBoostBtn.textContent = 'Use';
+    adBoostBtn.disabled = false;
+    adBoostDesc.textContent = 'Watch a short ad to activate';
+  }
+
+  adBoostBtn.addEventListener('click', async () => {
+    if (adBoostQueued) return;
     adBoostBtn.disabled = true;
     adBoostDesc.textContent = 'Loading ad…';
 
-    setTimeout(() => {
-      const boosted = BASE_RATE * 2;
-      document.getElementById('home-rate-text').textContent = `+${boosted} ORE / hr (2x active)`;
-      document.getElementById('rig-rate-n').textContent = boosted;
-      adBoostDesc.textContent = 'Boost active';
-      adBoostBtn.textContent = 'Active';
-
+    if (!telegramMode){
+      // Demo mode fallback: same fake local preview as before, no persistence
       setTimeout(() => {
-        document.getElementById('home-rate-text').textContent = `+${BASE_RATE} ORE / hr`;
-        document.getElementById('rig-rate-n').textContent = BASE_RATE;
-        adBoostDesc.textContent = 'Watch a short ad to activate';
-        adBoostBtn.textContent = 'Use';
+        const boosted = BASE_RATE * 2;
+        document.getElementById('home-rate-text').textContent = `+${boosted} ORE / hr (2x active)`;
+        document.getElementById('rig-rate-n').textContent = boosted;
+        adBoostDesc.textContent = 'Boost active (demo)';
+        setTimeout(() => {
+          document.getElementById('home-rate-text').textContent = `+${BASE_RATE} ORE / hr`;
+          document.getElementById('rig-rate-n').textContent = BASE_RATE;
+          setBoostAvailableUI();
+        }, 20000);
+      }, 1200);
+      return;
+    }
+
+    setTimeout(async () => {
+      try {
+        const res = await fetch('/api/activate-boost', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+        });
+        const data = await res.json();
+        if (res.status === 200){
+          setBoostQueuedUI();
+        } else {
+          adBoostDesc.textContent = data.error || 'Something went wrong';
+          adBoostBtn.disabled = false;
+          setTimeout(() => { adBoostDesc.textContent = 'Watch a short ad to activate'; }, 1800);
+        }
+      } catch (err) {
+        console.error('activate-boost failed:', err);
+        adBoostDesc.textContent = 'Connection error — try again';
         adBoostBtn.disabled = false;
-        adBoostActive = false;
-      }, BOOST_SECONDS * 1000);
+      }
     }, 1200);
   });
 
@@ -1295,7 +1422,19 @@
           document.getElementById('profile-member-since').textContent =
             new Date(data.user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
-          // Sync the mine button to the real cooldown, based on when this
+          // Real deposit address + personal memo, sent from the backend
+          if (data.depositAddress) document.getElementById('deposit-address').textContent = data.depositAddress;
+          if (data.depositMemo) document.getElementById('deposit-memo').textContent = data.depositMemo;
+
+          // Home page rank stat
+          document.getElementById('home-rank').textContent = `Level ${data.user.rig_level || 2}`;
+
+          // Show whether a boost is already queued from a past session
+          if (parseFloat(data.user.next_claim_multiplier || 1) > 1){
+            setBoostQueuedUI();
+          }
+
+                    // Sync the mine button to the real cooldown, based on when this
           // user last actually claimed (from the database, not local memory).
           if (data.user.last_mine_claim){
             const secondsSince = (Date.now() - new Date(data.user.last_mine_claim).getTime()) / 1000;
