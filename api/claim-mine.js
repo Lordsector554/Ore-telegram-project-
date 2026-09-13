@@ -60,12 +60,17 @@ module.exports = async (req, res) => {
     }
   }
 
-  const reward = user.mining_rate || 120;
+  const multiplier = parseFloat(user.next_claim_multiplier || 1);
+  const reward = (user.mining_rate || 120) * multiplier;
   const newBalance = parseFloat(user.ore_balance) + reward;
 
   const { data: updatedUser, error: updateError } = await supabase
     .from('users')
-    .update({ ore_balance: newBalance, last_mine_claim: now.toISOString() })
+    .update({
+      ore_balance: newBalance,
+      last_mine_claim: now.toISOString(),
+      next_claim_multiplier: 1.0 // consumed — resets whether or not it was used
+    })
     .eq('id', user.id)
     .select()
     .single();
@@ -94,5 +99,5 @@ module.exports = async (req, res) => {
     }
   }
 
-  return res.status(200).json({ user: updatedUser, rewarded: reward, cycleSeconds: MINE_CYCLE_SECONDS });
+  return res.status(200).json({ user: updatedUser, rewarded: reward, cycleSeconds: MINE_CYCLE_SECONDS, wasBoosted: multiplier > 1 });
 };
