@@ -1606,6 +1606,54 @@
       })
       .catch(err => console.error('verify-user request failed:', err));
   }
+  // ---- Leaderboard ----
+  const leaderboardOverlay = document.getElementById('leaderboard-overlay');
+  const leaderboardList = document.getElementById('leaderboard-list');
+  const leaderboardMyRank = document.getElementById('leaderboard-my-rank');
+
+  document.getElementById('open-leaderboard').addEventListener('click', async () => {
+    leaderboardOverlay.hidden = false;
+    leaderboardList.innerHTML = '<div style="padding:16px 4px; color:var(--muted); font-size:13.5px; text-align:center;">Loading…</div>';
+    leaderboardMyRank.textContent = 'Loading your rank…';
+
+    if (!telegramMode){
+      leaderboardMyRank.textContent = 'Leaderboard only works inside Telegram';
+      leaderboardList.innerHTML = '';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+      });
+      const data = await res.json();
+      if (res.status !== 200){
+        leaderboardMyRank.textContent = data.error || 'Something went wrong';
+        leaderboardList.innerHTML = '';
+        return;
+      }
+
+      leaderboardMyRank.textContent = data.myRank
+        ? `Your rank: #${data.myRank} · ${Math.round(data.myTotalEarned).toLocaleString()} ORE earned`
+        : `Your rank: 101+ · ${Math.round(data.myTotalEarned).toLocaleString()} ORE earned`;
+
+      leaderboardList.innerHTML = data.leaderboard.map(row => `
+        <div style="display:flex; justify-content:space-between; padding:10px 4px; border-bottom:1px solid var(--border); font-size:14px;">
+          <span style="color:var(--muted); width:34px;">#${row.rank}</span>
+          <span style="flex:1;">${row.name}</span>
+          <span style="color:var(--amber); font-weight:600;">${Math.round(row.totalEarned).toLocaleString()} ORE</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('leaderboard failed:', err);
+      leaderboardMyRank.textContent = 'Connection error — try again';
+      leaderboardList.innerHTML = '';
+    }
+  });
+
+  document.getElementById('leaderboard-close').addEventListener('click', () => { leaderboardOverlay.hidden = true; });
 </script>
 </body>
 </html>
