@@ -27,7 +27,7 @@ const TASKS = {
   join_channel:        { reward: 0.01, currency: 'TON', verifyChannel: CHANNEL_USERNAME, isReferralGate: true },
   join_payout_channel: { reward: 0.01, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
   follow_x:            { reward: 0.01, currency: 'TON' },
-  watch_video:         { reward: 545723, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
+  watch_video:         { reward: 3, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
   react_message:       { reward: 3, currency: 'ORE', resetSeconds: 10800 } // 3 hours — honor-system, not verified
 };
 const REFERRAL_GATE_TASKS = ['join_channel', 'join_payout_channel'];
