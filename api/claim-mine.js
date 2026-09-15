@@ -68,6 +68,7 @@ module.exports = async (req, res) => {
     .from('users')
     .update({
       ore_balance: newBalance,
+      total_ore_earned: parseFloat(user.total_ore_earned || 0) + reward, // never decreases, unlike balance
       last_mine_claim: now.toISOString(),
       next_claim_multiplier: 1.0 // consumed — resets whether or not it was used
     })
@@ -84,7 +85,7 @@ module.exports = async (req, res) => {
     const share = reward * REFERRAL_ORE_SHARE;
     const { data: referrer } = await supabase
       .from('users')
-      .select('ore_balance, referral_ore_earned')
+      .select('ore_balance, referral_ore_earned, total_ore_earned')
       .eq('id', user.referred_by)
       .single();
 
@@ -93,7 +94,8 @@ module.exports = async (req, res) => {
         .from('users')
         .update({
           ore_balance: parseFloat(referrer.ore_balance) + share,
-          referral_ore_earned: parseFloat(referrer.referral_ore_earned || 0) + share
+          referral_ore_earned: parseFloat(referrer.referral_ore_earned || 0) + share,
+          total_ore_earned: parseFloat(referrer.total_ore_earned || 0) + share
         })
         .eq('id', user.referred_by);
     }
