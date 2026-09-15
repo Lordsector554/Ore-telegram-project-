@@ -372,7 +372,19 @@
         <button class="game-close" id="withdraw-ore-close" style="margin-top:12px;">Close</button>
       </div>
     </div>
-
+    
+<!-- LEADERBOARD MODAL -->
+<div class="game-overlay" id="leaderboard-overlay" hidden>
+  <div class="game-modal" style="max-height:80vh; display:flex; flex-direction:column;">
+    <div class="game-title">Top Earners</div>
+    <div class="game-stake" id="leaderboard-my-rank">Loading your rank…</div>
+    <div id="leaderboard-list" style="overflow-y:auto; flex:1; margin:14px 0; text-align:left;">
+      <div style="padding:16px 4px; color:var(--muted); font-size:13.5px; text-align:center;">Loading…</div>
+    </div>
+    <button class="game-close" id="leaderboard-close">Close</button>
+  </div>
+</div>
+    
     <!-- DEPOSIT MODAL -->
     <div class="game-overlay" id="deposit-overlay" hidden>
       <div class="game-modal">
