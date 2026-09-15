@@ -1,4 +1,4 @@
-    const crypto = require('crypto');
+const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
@@ -26,8 +26,8 @@ const TASKS = {
   daily_checkin:       { reward: 50, currency: 'ORE', dailyReset: true },
   join_channel:        { reward: 0.01, currency: 'TON', verifyChannel: CHANNEL_USERNAME, isReferralGate: true },
   join_payout_channel: { reward: 0.01, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
-  follow_x:            { reward: 0.005, currency: 'TON' },
-  watch_video:         { reward: 3, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
+  follow_x:            { reward: 0.01, currency: 'TON' },
+  watch_video:         { reward: 545723, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
   react_message:       { reward: 3, currency: 'ORE', resetSeconds: 10800 } // 3 hours — honor-system, not verified
 };
 const REFERRAL_GATE_TASKS = ['join_channel', 'join_payout_channel'];
@@ -120,10 +120,14 @@ module.exports = async (req, res) => {
 
   const balanceField = task.currency === 'TON' ? 'ton_balance' : 'ore_balance';
   const newBalance = parseFloat(user[balanceField]) + task.reward;
+  const updates = { [balanceField]: newBalance };
+  if (balanceField === 'ore_balance') {
+    updates.total_ore_earned = parseFloat(user.total_ore_earned || 0) + task.reward;
+  }
 
   const { data: updatedUser, error: updateError } = await supabase
     .from('users')
-    .update({ [balanceField]: newBalance })
+    .update(updates)
     .eq('id', user.id)
     .select()
     .single();
