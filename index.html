@@ -457,17 +457,17 @@
       <div class="task-icon" id="join-payout-channel-open" style="cursor:pointer;">💸</div>
       <div class="task-info" id="join-payout-channel-info" style="cursor:pointer;">
         <div class="task-name">Join our payout channel</div>
-        <div class="task-reward">Tap to open · then Verify · +0.005 TON</div>
+        <div class="task-reward">Tap to open · then Verify · +0.01 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.005" data-task-key="join_payout_channel" data-unlocks-referral="true">Verify</button>
+      <button class="task-btn claim" data-reward="0.01" data-task-key="join_payout_channel" data-unlocks-referral="true">Verify</button>
     </div>
     <div class="task-item">
       <div class="task-icon" id="follow-x-open" style="cursor:pointer;">🐦</div>
       <div class="task-info" id="follow-x-info" style="cursor:pointer;">
         <div class="task-name">Follow on X</div>
-        <div class="task-reward">Tap to open · then Claim · +0.005 TON</div>
+        <div class="task-reward">Tap to open · then Claim · +0.01 TON</div>
       </div>
-      <button class="task-btn claim" data-reward="0.005" data-task-key="follow_x">Claim</button>
+      <button class="task-btn claim" data-reward="0.01" data-task-key="follow_x">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">🎬</div>
@@ -665,7 +665,7 @@
   });
 
   // ---- Fake balance state ----
-  let balance = 12480.42;
+  let balance = 0.00;
   const balanceEl = document.getElementById('balance-value');
   function renderBalance(){
     balanceEl.innerHTML = balance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>ORE</span>';
@@ -789,7 +789,7 @@ fetch('/api/ore-price')
   });
   
   // ---- Fake TON balance state ----
-  let tonBalance = 2;
+  let tonBalance = 0;
   const tonEl = document.getElementById('ton-value');
   function renderTon(){
     tonEl.innerHTML = tonBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>TON</span>';
