@@ -344,7 +344,7 @@
         <div class="balance-col">
           <div class="balance-label">Ore balance</div>
           <div class="balance-value" id="balance-value">0<span>ORE</span></div>
-          <div class="balance-rate" id="home-rate-text">+120 ORE / 4 hr</div>
+          <div class="balance-rate sky" id="ore-price-line" style="margin-top:2px;">Checking price…</div>
         </div>
         <div class="balance-divider"></div>
         <div class="balance-col">
@@ -772,8 +772,24 @@
   renderBalance();
   setReadyState();
 
+// ---- ORE price (public data, works even outside Telegram) ----
+fetch('/api/ore-price')
+  .then(res => res.json())
+  .then(data => {
+    const priceLine = document.getElementById('ore-price-line');
+    if (data.hasLiquidity && data.priceUsd){
+      priceLine.textContent = `$${data.priceUsd.toFixed(6)} per ORE`;
+    } else {
+      priceLine.textContent = 'No market yet';
+    }
+  })
+  .catch(err => {
+    console.error('ore-price failed:', err);
+    document.getElementById('ore-price-line').textContent = 'Price unavailable';
+  });
+  
   // ---- Fake TON balance state ----
-  let tonBalance = 18.40;
+  let tonBalance = 2;
   const tonEl = document.getElementById('ton-value');
   function renderTon(){
     tonEl.innerHTML = tonBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '<span>TON</span>';
