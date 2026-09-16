@@ -10,6 +10,7 @@ const supabase = createClient(
 // ====== EASY-EDIT SETTINGS ======
 // Where successful withdrawals get posted as public proof.
 const PAYOUT_CHANNEL_USERNAME = 'ORE_payoutchannel'; // no @, no link
+const PAYOUT_IMAGE_URL = 'https://ibb.co/kV04JD7H'; // optional — paste a public image URL here to include an image with each payout post
 // =================================
 
 // You trigger this by visiting:
@@ -60,13 +61,21 @@ module.exports = async (req, res) => {
         .eq('id', w.id);
 
       try {
-        await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+        const payoutTime = new Date().toUTCString();
+        const messageText = `💰 New Payout Completed\n\n🕒 Time: ${payoutTime}\n💰 Amount: ${w.amount} ${w.currency}\n🌐 Network: TON\n✅ Payment processed successfully`;
+
+        // If PAYOUT_IMAGE_URL is set, posts as a photo with this text as the
+        // caption. If left blank, falls back to a plain text message — no
+        // need to have an image ready before this works.
+        const telegramMethod = PAYOUT_IMAGE_URL ? 'sendPhoto' : 'sendMessage';
+        const telegramBody = PAYOUT_IMAGE_URL
+          ? { chat_id: '@' + PAYOUT_CHANNEL_USERNAME, photo: PAYOUT_IMAGE_URL, caption: messageText }
+          : { chat_id: '@' + PAYOUT_CHANNEL_USERNAME, text: messageText };
+
+        await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/${telegramMethod}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: '@' + PAYOUT_CHANNEL_USERNAME,
-            text: `✅ Withdrawal completed: ${w.amount} ${w.currency}`
-          })
+          body: JSON.stringify(telegramBody)
         });
         await supabase.from('withdrawals').update({ notified: true }).eq('id', w.id);
       } catch (notifyErr) {
