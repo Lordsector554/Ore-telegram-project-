@@ -1394,7 +1394,7 @@ fetch('/api/ore-price')
       return;
     }
     if (amount < MIN_ORE_WITHDRAW){
-      withdrawOreResult.textContent = Minimum withdrawal is ${MIN_ORE_WITHDRAW.toLocaleString()} ORE;
+      withdrawOreResult.textContent = `Minimum withdrawal is ${MIN_ORE_WITHDRAW.toLocaleString()} ORE`;
       withdrawOreResult.className = 'game-result lose';
       return;
     }
@@ -1412,7 +1412,7 @@ fetch('/api/ore-price')
     if (!telegramMode){
       balance -= amount;
       renderBalance();
-      withdrawOreResult.textContent = ${amount.toLocaleString()} ORE withdrawal pending admin approval (demo);
+      withdrawOreResult.textContent = `${amount.toLocaleString()} ORE withdrawal pending admin approval (demo)`;
       withdrawOreResult.className = 'game-result pending';
       return;
     }
@@ -1427,7 +1427,7 @@ fetch('/api/ore-price')
       if (res.status === 200){
         balance = parseFloat(data.user.ore_balance);
         renderBalance();
-        withdrawOreResult.textContent = ${amount.toLocaleString()} ORE withdrawal pending admin approval;
+        withdrawOreResult.textContent = `${amount.toLocaleString()} ORE withdrawal pending admin approval`;
         withdrawOreResult.className = 'game-result pending';
       } else {
         withdrawOreResult.textContent = data.error || 'Something went wrong';
