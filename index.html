@@ -364,7 +364,7 @@
     <div class="game-overlay" id="withdraw-ore-overlay" hidden>
       <div class="game-modal">
         <div class="game-title">Withdraw ORE</div>
-        <div class="game-stake">Minimum withdrawal: 1,500 ORE</div>
+        <div class="game-stake">Minimum withdrawal: 5,000 ORE</div>
         <input type="number" id="withdraw-ore-amount" class="withdraw-input" placeholder="Amount in ORE" min="1500" step="1">
         <input type="text" id="withdraw-ore-address" class="withdraw-input" placeholder="Your TON wallet address">
         <div class="game-result" id="withdraw-ore-result"></div>
@@ -1355,8 +1355,8 @@ fetch('/api/ore-price')
   // ---- Withdraw ORE ----
   // Flip this to true once you're ready to let people withdraw ORE.
   // Everything else (the modal, the minimum, the pending status) is already built.
-  const ORE_WITHDRAWALS_ENABLED = true;
-  const MIN_ORE_WITHDRAW = 1500;
+  const ORE_WITHDRAWALS_ENABLED = false;
+  const MIN_ORE_WITHDRAW = 5000;
   const withdrawOreBtn = document.getElementById('withdraw-ore-btn');
   const withdrawOreOverlay = document.getElementById('withdraw-ore-overlay');
   const withdrawOreAmountInput = document.getElementById('withdraw-ore-amount');
