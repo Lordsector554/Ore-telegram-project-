@@ -1,4 +1,4 @@
-const crypto = require('crypto'); 
+const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const MIN_TON_WITHDRAW = 0.20;
+const MIN_TON_WITHDRAW = 0.20; 
 const MIN_ORE_WITHDRAW = 1500;
 
 function verifyTelegramInitData(initData, botToken) {
