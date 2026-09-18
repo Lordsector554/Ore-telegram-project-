@@ -1,7 +1,7 @@
 // ====== EASY-EDIT SETTINGS ======
 // Your real ORE Jetton contract address, even before it has liquidity.
 // This is public information, not a secret — safe to keep as a plain constant.
-const ORE_JETTON_ADDRESS = 'PUT_YOUR_ORE_JETTON_CONTRACT_ADDRESS_HERE';
+const ORE_JETTON_ADDRESS = 'EQBmkhgHbcK0RhH5EMPnQYT9Q7OtBHkpFF1iip_SsaUAIISb';
 // =================================
 
 // Public market data — no Telegram auth needed, since this isn't user-specific.
