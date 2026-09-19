@@ -26,7 +26,7 @@ const TASKS = {
   daily_checkin:       { reward: 50, currency: 'ORE', dailyReset: true },
   join_channel:        { reward: 0.01, currency: 'TON', verifyChannel: CHANNEL_USERNAME, isReferralGate: true },
   join_payout_channel: { reward: 0.01, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
-  follow_x:            { reward: 0.01, currency: 'TON' },
+  follow_x:            { reward: 0.01, currency: 'TON', resetSeconds: 10800 },
   watch_video:         { reward: 3, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
   react_message:       { reward: 5, currency: 'ORE', resetSeconds: 10800 },// 3 hours — honor-system, not verified
   youtube_watch:       { reward: 5, currency: 'ORE', resetSeconds: 10800 },
