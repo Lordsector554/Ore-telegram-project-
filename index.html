@@ -478,12 +478,28 @@
        <button class="task-btn claim" data-reward="3" data-task-key="watch_video">Claim</button>
     </div>
     <div class="task-item">
+  <div class="task-icon" id="youtube_follow-open" style="cursor:pointer;">📺</div>
+  <div class="task-info" id="youtube_follow-info" style="cursor:pointer;">
+    <div class="task-name">Follow our YouTube channel</div>
+    <div class="task-reward">Tap to open · then Claim · +0.01 TON</div>
+  </div>
+  <button class="task-btn claim" data-reward="0.01" data-task-key="youtube_follow">Claim</button>
+    </div>
+    <div class="task-item">
+  <div class="task-icon" id="youtube_watch-open" style="cursor:pointer;">📺</div>
+  <div class="task-info" id="youtube_watch-info" style="cursor:pointer;">
+    <div class="task-name">Watch our YouTube channel</div>
+    <div class="task-reward">Tap to open · then Claim · +5 ORE · resets every 3 hrs</div>
+  </div>
+  <button class="task-btn claim" data-reward="5" data-task-key="youtube_watch">Claim</button>
+</div>
+    <div class="task-item">
       <div class="task-icon" id="react-message-open" style="cursor:pointer;">❤️</div>
       <div class="task-info" id="react-message-info" style="cursor:pointer;">
         <div class="task-name">React to our latest message</div>
-        <div class="task-reward">Tap to open · then Claim · +3 ORE · resets every 3 hrs</div>
+        <div class="task-reward">Tap to open · then Claim · +5 ORE · resets every 3 hrs</div>
       </div>
-      <button class="task-btn claim" data-reward="3" data-task-key="react_message" onclick="openTelegramLink(CHANNEL_USERNAME)">Claim</button>
+      <button class="task-btn claim" data-reward="5" data-task-key="react_message" onclick="openTelegramLink(CHANNEL_USERNAME)">Claim</button>
     </div>
     <div class="task-item">
       <div class="task-icon">👥</div>
@@ -823,6 +839,7 @@ fetch('/api/ore-price')
   const PAYOUT_CHANNEL_USERNAME = 'ORE_payoutchannel'; // must match process-withdrawals.js
   const X_USERNAME = 'itz_tripleE';                // change to your real X/Twitter username
   const ADSGRAM_BLOCK_ID = '47785';        // from https://partner.adsgram.ai
+  const YOUTUBE_CHANNEL_URL = 'https://youtube.com/@oreminer_channel';
   // =====================================
 
   function openTelegramLink(username){
@@ -850,6 +867,10 @@ fetch('/api/ore-price')
   document.getElementById('join-payout-channel-info').addEventListener('click', () => openTelegramLink(PAYOUT_CHANNEL_USERNAME));
   document.getElementById('follow-x-open').addEventListener('click', () => openExternalLink(`https://x.com/${X_USERNAME}`));
   document.getElementById('follow-x-info').addEventListener('click', () => openExternalLink(`https://x.com/${X_USERNAME}`));
+  document.getElementById('youtube_watch-open').addEventListener('click', () => openExternalLink(YOUTUBE_CHANNEL_URL));
+  document.getElementById('youtube_watch-info').addEventListener('click', () => openExternalLink(YOUTUBE_CHANNEL_URL));
+  document.getElementById('youtube_follow-open').addEventListener('click', () => openExternalLink(YOUTUBE_CHANNEL_URL));
+  document.getElementById('youtube_follow-info').addEventListener('click', () => openExternalLink(YOUTUBE_CHANNEL_URL));
   document.getElementById('react-message-open').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
   document.getElementById('react-message-info').addEventListener('click', () => openTelegramLink(CHANNEL_USERNAME));
 
