@@ -126,8 +126,8 @@ module.exports = async (req, res) => {
   }
 
   // Rolling-reset tasks — keep in sync with resetSeconds values in claim-task.js
-  const TASK_RESET_SECONDS = { watch_video: 10800, react_message: 10800 };
-
+const TASK_RESET_SECONDS = { watch_video: 10800, react_message: 10800, youtube_watch: 10800 };
+  
   // Tell the frontend which tasks are already done, so checkmarks show
   // correctly on load instead of only after the button is tapped again.
   const { data: completions } = await supabase
