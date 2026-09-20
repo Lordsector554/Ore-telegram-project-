@@ -596,7 +596,7 @@
     <div id="refer-unlocked">
       <div class="refer-card">
         <div style="color:var(--muted); font-size:13px;">Your invite link</div>
-        <div class="refer-code" id="refer-link">t.me/OreTapBot?start=ORE_7X2K9</div>
+        <div class="refer-code" id="refer-link">t.me/OreTapBot?startapp=ORE_7X2K9</div>
         <button class="copy-btn" id="copy-btn">Copy invite link</button>
       </div>
 
@@ -1591,7 +1591,7 @@ fetch('/api/ore-price')
           // Show this user's real, unique referral link instead of the placeholder
           if (data.user.referral_code){
             document.getElementById('refer-link').textContent =
-              `t.me/${BOT_USERNAME}?start=${data.user.referral_code}`;
+              `t.me/${BOT_USERNAME}?startapp=${data.user.referral_code}`;
           }
 
           // Show correct checkmarks for tasks already claimed in a past
