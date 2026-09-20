@@ -1139,9 +1139,13 @@ fetch('/api/ore-price')
       const amount = parseFloat(btn.dataset.reward);
       tonBalance += amount;
       renderTon();
-      btn.textContent = '✓';
-      btn.classList.remove('claim');
-      btn.classList.add('done');
+      if (REPEATING_TASKS.includes(taskKey)){
+  btn.textContent = '✓';
+  btn.classList.remove('claim');
+  btn.classList.add('done');
+} else {
+  btn.closest('.task-item').style.display = 'none';
+      }
       if (btn.dataset.unlocksReferral === 'true'){
         referralUnlocked = true;
         renderReferGate();
@@ -1602,10 +1606,14 @@ fetch('/api/ore-price')
             data.completedTasks.forEach(key => {
               const btn = document.querySelector(`.task-btn.claim[data-task-key="${key}"]`);
               if (btn){
-                btn.textContent = '✓';
-                btn.classList.remove('claim');
-                btn.classList.add('done');
-                btn.disabled = true;
+                if (REPEATING_TASKS.includes(key)){
+              btn.textContent = '✓';
+              btn.classList.remove('claim');
+              btn.classList.add('done');
+              btn.disabled = true;
+      } else {
+          btn.closest('.task-item').style.display = 'none';
+                }
                 if (btn.dataset.unlocksReferral === 'true'){
                   referralUnlocked = true;
                 }
