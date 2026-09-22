@@ -26,11 +26,9 @@ const TASKS = {
   daily_checkin:       { reward: 50, currency: 'ORE', dailyReset: true },
   join_channel:        { reward: 0.01, currency: 'TON', verifyChannel: CHANNEL_USERNAME, isReferralGate: true },
   join_payout_channel: { reward: 0.01, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
-  follow_x:            { reward: 0.01, currency: 'TON', resetSeconds: 10800 },
-  watch_video:         { reward: 3, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
-  react_message:       { reward: 5, currency: 'ORE', resetSeconds: 10800 },// 3 hours — honor-system, not verified
-  youtube_watch:       { reward: 5, currency: 'ORE', resetSeconds: 10800 },
-  youtube_follow:      { reward: 0.01, currency: 'TON' }
+  follow_x:            { reward: 0.01, currency: 'TON' },
+  watch_video:         { reward: 5, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
+  react_message:       { reward: 5, currency: 'ORE', resetSeconds: 10800 } // 3 hours — honor-system, not verified
 };
 const REFERRAL_GATE_TASKS = ['join_channel', 'join_payout_channel'];
 // =================================
@@ -169,13 +167,19 @@ module.exports = async (req, res) => {
           .single();
 
         if (referrer) {
-          await supabase
+          const { error: bonusError } = await supabase
             .from('users')
             .update({
               ton_balance: parseFloat(referrer.ton_balance) + REFERRAL_TON_BONUS,
               referral_ton_earned: parseFloat(referrer.referral_ton_earned || 0) + REFERRAL_TON_BONUS
             })
             .eq('id', user.referred_by);
+
+          if (bonusError) {
+            console.error('Failed to pay referral TON bonus:', bonusError);
+          }
+        } else {
+          console.error('Referrer not found for id:', user.referred_by);
         }
       }
     }
