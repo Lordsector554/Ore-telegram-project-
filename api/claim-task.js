@@ -28,7 +28,9 @@ const TASKS = {
   join_payout_channel: { reward: 0.01, currency: 'TON', verifyChannel: PAYOUT_CHANNEL_USERNAME, isReferralGate: true },
   follow_x:            { reward: 0.01, currency: 'TON' },
   watch_video:         { reward: 5, currency: 'ORE', resetSeconds: 10800 }, // 3 hours
-  react_message:       { reward: 5, currency: 'ORE', resetSeconds: 10800 } // 3 hours — honor-system, not verified
+  react_message:       { reward: 5, currency: 'ORE', resetSeconds: 10800 }, // 3 hours — honor-system, not verified
+  youtube_watch:       { reward: 5, currency: 'ORE', resetSeconds: 10800 }, // 3 hours — honor-system, not verified
+  youtube_follow:      { reward: 5, currency: 'ORE' } // one-time — honor-system, not verified
 };
 const REFERRAL_GATE_TASKS = ['join_channel', 'join_payout_channel'];
 // =================================
